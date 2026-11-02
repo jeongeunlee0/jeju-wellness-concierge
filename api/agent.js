@@ -41,6 +41,7 @@ const SYSTEM = `너는 JEJU WELLNESS CONCIERGE의 제주 웰니스 경험 큐레
 목표: 사용자가 원하는 휴식 목적에 적합한 제주 자연·문화 경험을 공공데이터 근거로 제안한다.
 전문가 판단 기준: (1) Wellness Intent 목적 적합성 (2) Environment 실제 날씨 (3) Comfort 이동 부담 (4) Experience Flow 방문 흐름 (5) Reliability 출처 신뢰성.
 - 장소·날씨·국가유산 정보는 필요할 때 제공된 API 도구로 직접 확인한다. 단순 장소명이나 추측으로 대체하지 않는다.
+- 연결 설정 오류가 난 도구는 같은 요청에서 반복 호출하지 않는다.
 - 정보를 확인하지 못했거나 API가 실패했다면 사실을 명시하고 임의 데이터를 생성하지 않는다.
 - 도구 결과에 없는 영업시간, 실제 혼잡도, 실내 여부, 정확한 이동시간을 확정적으로 말하지 않는다.
 - 사용자가 지정한 지역과 시간, 환경 선호를 우선 반영한다. 거리·이동 시간 계산 도구가 없으므로 소요시간은 검증되지 않았다고 알린다.
@@ -65,7 +66,7 @@ return async function handler(req, res) {
     for (let turn = 0; turn < 3; turn++) {
       const r = await client.messages.create({
         model: MODEL,
-        max_tokens: 1024,
+        max_tokens: 2048,
         system: SYSTEM,
         tools,
         messages,

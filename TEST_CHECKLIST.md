@@ -10,7 +10,7 @@
 - [x] 모바일 viewport UI 및 저장
 - [ ] 관광공사 정상 upstream 응답 (키 필요)
 - [ ] 기상청 정상 upstream 응답 (키 필요)
-- [ ] Claude 실제 tool use 및 화면 결과 (키·모델 접근 필요)
+- [x] Claude 실제 tool use 및 화면 결과 (국가유산 성공, 공공데이터 미설정 실패 구분)
 - [ ] GitHub push 자동 배포 (Login Connection 필요)
 
 근거와 제한은 VERIFICATION_REPORT.md 및 verification-*.json 참고.

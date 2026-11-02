@@ -22,7 +22,7 @@ npm run build / npm run lint / npm run preflight 로 검증합니다. preflight�
 Supabase Auth의 Anonymous Sign-Ins와 supabase/schema.sql이 필요합니다. wellness_favorites는 auth.uid() 기준 사용자별 RLS를 사용합니다. 게스트 세션은 새로고침 후 유지되지만 브라우저 데이터를 지우거나 다른 기기에서 접속하면 기존 저장함에 접근할 수 없습니다. 이전 v4의 공개 favorites 테이블은 사용하지 않습니다.
 
 ## AI
-Claude가 search_tour_places, get_weather, search_heritage 중 필요한 도구를 선택합니다. 도구 이름·입력·성공/실패·건수·결과를 화면에서 펼쳐 볼 수 있습니다. 모델 요청이 도중 실패해도 이미 실행한 기록을 보존합니다. 실제 Claude 호출 성공은 아직 검증되지 않았습니다.
+Claude가 search_tour_places, get_weather, search_heritage 중 필요한 도구를 선택합니다. 도구 이름·입력·성공/실패·건수·결과를 화면에서 펼쳐 볼 수 있습니다. 모델 요청이 도중 실패해도 이미 실행한 기록을 보존합니다. 실제 Claude 인증, 도구 선택, 국가유산 10건 결과와 날씨·관광정보 실패 기록 표시를 검증했습니다.
 
 ## 2026-11-02 확인 결과
 - npm ci: 149개 설치, audit 0 vulnerabilities
@@ -31,7 +31,8 @@ Claude가 search_tour_places, get_weather, search_heritage 중 필요한 도구�
 - 로컬 브라우저: 홈 및 국가유산 화면 표시
 - 국가유산청: 실제 10건 응답, 제주 관덕정 표시
 - Supabase: 제주 관덕정 저장 후 브라우저 새로고침 조회 성공
-- TourAPI/기상청/Claude: 키 미설정으로 정상 응답 미검증
+- Claude: 실제 인증 및 세 도구 호출 기록 검증 성공
+- TourAPI/기상청: 공공데이터 키 미설정으로 정상 응답 미검증
 - GitHub/Vercel/모바일: 최신 VERIFICATION_REPORT.md 참조
 
 의료적 진단과 치료를 제공하지 않습니다. 추천 중 영업시간·혼잡도·정확한 이동시간은 해당 도구로 확인되지 않습니다.
@@ -39,4 +40,6 @@ Claude가 search_tour_places, get_weather, search_heritage 중 필요한 도구�
 ## 배포 주소
 https://jeju-wellness-concierge.vercel.app
 
-실제 응답 재검증: node scripts/verify-live.mjs. 현재 3개 키 연동이 미완료여서 exit 1을 반환합니다. 자세한 성공·차단 근거는 VERIFICATION_REPORT.md와 verification-production.json에 기록했습니다.
+실제 응답 재검증: node scripts/verify-live.mjs. 공공데이터 키 미설정인 경우 두 공공 API 정상 응답 검사는 실패합니다. 로컬에서 Claude까지 검사하려면 서버 키를 별도 설정해야 합니다. 자세한 성공·차단 근거는 VERIFICATION_REPORT.md와 verification-production.json에 기록했습니다.
+
+추가 회귀 검사: npm test (8개). 최신 결과와 제한은 VERIFICATION_REPORT.md를 확인하세요.

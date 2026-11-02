@@ -52,8 +52,8 @@ export const useAppStore = create(
         const history = get().messages.map((m) => ({ role: m.role, content: m.text }))  // Claude 형식
         set({ messages: [...get().messages, { role: 'user', text }], chatLoading: true })
         try {
-          const { answer, steps } = await askAgent(text, history)
-          set({ messages: [...get().messages, { role: 'assistant', text: answer, steps }] })
+          const { answer, steps, truncated } = await askAgent(text, history)
+          set({ messages: [...get().messages, { role: 'assistant', text: truncated ? answer + '\n\n※ 답변 길이 한도에 도달했습니다. 범위를 좁혀 다시 요청해 주세요.' : answer, steps }] })
         } catch (e) {
           set({ messages: [...get().messages, { role: 'assistant', text: e.message, steps: e.steps }] })
           get().toast(e.message, 'danger')
