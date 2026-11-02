@@ -1,0 +1,49 @@
+/* 테마(zephyr) 위에 덧입히는 우리 앱 스타일 — 웰니스: 세이지·바다색·살구색 */
+:root { --wc-coral: #ff8a65; --wc-sea: #4fb3c8; --wc-sage: #8cc9a0; }
+body { font-family: 'Pretendard', system-ui, sans-serif; background: #f6fbfa; }
+
+.app-nav { background: rgba(255, 255, 255, .85); backdrop-filter: blur(8px); border-bottom: 1px solid #e3efed; }
+
+.hero { position: relative; overflow: hidden; background: #e9f6f4; min-height: 440px; }
+.hero-text {
+  position: absolute; left: 0; top: 0; bottom: 0; padding: 2.5rem; max-width: 560px;
+  display: flex; flex-direction: column; justify-content: center; pointer-events: none;
+  background: linear-gradient(90deg, rgba(246,251,250,.95) 55%, rgba(246,251,250,0));
+}
+.hero-text > * { pointer-events: auto; }
+.hero-text h1 { font-size: clamp(2rem, 5vw, 3.2rem); letter-spacing: .02em; color: #1d4d4f; }
+.eyebrow { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--wc-sea); margin-bottom: .75rem; }
+@media (max-width: 767px) {
+  .hero-text { position: static; background: #f6fbfa; max-width: none; padding: 1.5rem; }
+}
+
+.map-frame { border-radius: 1rem; overflow: hidden; border: 1px solid #d9ebe8; background: #e9f6f4; }
+.pin-label {
+  background: rgba(255,255,255,.92); color: #1d4d4f; border-radius: 1rem; padding: .15rem .6rem;
+  font-size: .8rem; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,.15); pointer-events: none;
+}
+.pin-label b { color: var(--wc-coral); }
+
+.feature-card, .item-card { transition: transform .15s, box-shadow .15s; }
+.feature-card:hover, .item-card:hover { transform: translateY(-3px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.08); }
+.item-card-img { height: 160px; object-fit: cover; }
+.placeholder-img {
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #dff2ec, #e6f4f8); color: var(--wc-sea); font-size: 2rem;
+}
+
+.chip {
+  border: 1px solid #cfe3df; background: #fff; color: #1d4d4f; border-radius: 2rem;
+  padding: .3rem .85rem; font-size: .9rem; transition: all .15s;
+}
+.chip:hover { border-color: var(--wc-sea); }
+.chip.active { background: var(--wc-sea); border-color: var(--wc-sea); color: #fff; }
+
+.course-summary { background: linear-gradient(135deg, #e3f5ee, #e6f4f8); border: 0; }
+.course-stop { display: flex; gap: .9rem; padding: .9rem 0; border-top: 1px dashed #cfe3df; }
+.course-stop:first-child { border-top: 0; }
+.course-num {
+  flex: 0 0 2rem; height: 2rem; border-radius: 50%; background: var(--wc-coral); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+}
+.empty-state { min-height: 360px; border-style: dashed; background: transparent; }
