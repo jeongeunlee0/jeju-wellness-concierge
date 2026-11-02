@@ -140,7 +140,7 @@ export const useAppStore = create(
           summary: result.course.summary ?? '웰니스 코스',
           preferences: prefs,
           course: result.course,
-          sources: result.steps.map((s) => s.tool),
+          sources: [...result.steps.map((s) => s.tool), ...(result.mode === 'rules' ? ['rules'] : [])],
         }
         if (!supabase) {
           const local = { ...row, id: crypto.randomUUID(), created_at: new Date().toISOString() }

@@ -3,6 +3,7 @@ import { searchTour } from '../server/tour.js';
 import { getWeather } from '../server/weather.js';
 import { searchHeritage } from '../server/heritage.js';
 import { getAirQuality } from '../server/airquality.js';
+import { buildFallbackCourse } from '../server/fallbackCourse.js';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5-5';
@@ -134,7 +135,7 @@ export default async function handler(req, res) {
           const hit = known.find((k) => k.name && (k.name === s.name || k.name.includes(s.name) || s.name.includes(k.name)));
           return { ...s, verified: Boolean(hit), lat: hit?.lat ? Number(hit.lat) : null, lng: hit?.lng ? Number(hit.lng) : null, addr: hit?.addr ?? null };
         });
-        return res.status(200).json({ course, steps, generatedAt: new Date().toISOString() });
+        return res.status(200).json({ course, steps, mode: 'ai', generatedAt: new Date().toISOString() });
       }
 
       messages.push({ role: 'assistant', content: r.content });
@@ -156,6 +157,14 @@ export default async function handler(req, res) {
   } catch (e) {
     // 429 = Claude 호출 한도 초과. 그 밖의 내부 오류 문구는 로그에만 남기고 화면에는 일반 메시지를 보낸다
     console.error('agent error', e.status, e.message);
+    // AI 를 쓸 수 없으면(크레딧 소진·키 오류·장애·한도) 같은 공공데이터로 만든 규칙 기반 "기본 추천"으로 대신한다.
+    // 응답의 mode 가 'rules' 이고 화면에도 AI 가 아님을 표시한다 (AI 가 만든 것처럼 보이지 않게).
+    try {
+      const fb = await buildFallbackCourse(prefs);
+      return res.status(200).json({ ...fb, generatedAt: new Date().toISOString(), aiUnavailable: true });
+    } catch (fe) {
+      console.error('fallback error', fe.message);
+    }
     // AI 계정의 크레딧 소진·키 오류는 사용자에게 "일시적으로 쓸 수 없음"으로 알리고, 나머지 기능은 계속 쓸 수 있다고 안내한다 (내부 결제 정보는 노출하지 않음)
     if (/credit balance|authentication|invalid x-api-key|permission/i.test(e.message ?? '')) {
       return res.status(503).json({ error: '지금은 AI 컨시어지를 잠시 사용할 수 없어요. 장소 둘러보기·장바구니·저장한 코스는 그대로 쓸 수 있어요.' });

@@ -159,6 +159,8 @@ if (SKIP_AGENT) {
     const stops = course.stops ?? []
     const text = JSON.stringify(course)
     rec('환각검증', `${c.id}: 코스 생성`, stops.length >= 1 && stops.length <= 4, `${stops.length}곳 · 도구 ${r.body.steps.map((s) => s.tool).join(',')}`)
+    // AI 를 쓸 수 없을 때의 규칙 기반 기본 추천(mode: 'rules')을 AI 통과로 착각하지 않도록 구분해서 기록한다
+    rec('AI 사용', `${c.id}: Claude 에이전트가 직접 생성(mode=ai)`, r.body.mode === 'ai', r.body.mode === 'rules' ? 'AI 불가 → 규칙 기반 기본 추천으로 대체됨' : `mode=${r.body.mode}`)
     rec('환각검증', `${c.id}: 날씨·대기질 확인 후 추천`, ['get_weather', 'get_air_quality'].every((t) => r.body.steps.some((s) => s.tool === t)))
     // 서버 표시값 검증: verified 이면 좌표가 있어야 한다
     rec('환각검증', `${c.id}: verified 장소는 좌표 보유`, stops.filter((s) => s.verified).every((s) => s.lat && s.lng))

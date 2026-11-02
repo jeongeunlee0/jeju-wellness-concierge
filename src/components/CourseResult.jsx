@@ -34,7 +34,7 @@ export default function CourseResult({ result, onSave, showMap = true, purpose }
   const [copied, setCopied] = useState(false)
   const addToCart = useAppStore((st) => st.addToCart)
   const cart = useAppStore((st) => st.cart)
-  const { course, steps = [], generatedAt, raw } = result
+  const { course, steps = [], generatedAt, raw, mode } = result
   if (!course) return <Alert variant="warning">{raw ?? '코스를 만들지 못했어요. 다시 시도해 주세요.'}</Alert>
   const total = course.stops.reduce((a, s) => a + (Number(s.minutes) || 0), 0)
 
@@ -45,6 +45,11 @@ export default function CourseResult({ result, onSave, showMap = true, purpose }
 
   return (
     <div className="d-flex flex-column gap-3">
+      {mode === 'rules' && (
+        <Alert variant="info" className="mb-0 small" role="status">
+          <Icon name="shield" size={16} className="me-1" /><b>AI 없이 만든 기본 추천</b>이에요. 지금은 AI 컨시어지를 쓸 수 없어, 같은 공공데이터(날씨·대기질·관광·국가유산)에서 정해진 규칙으로 골랐어요. 장소는 모두 실제 데이터에 있는 곳입니다.
+        </Alert>
+      )}
       <Card className="course-summary glass overflow-hidden">
         {purpose && <MoodHeader purpose={purpose} />}
         <Card.Body>
