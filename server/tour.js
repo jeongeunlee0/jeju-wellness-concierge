@@ -1,10 +1,11 @@
 // 한국관광공사 TourAPI (국문 관광정보 서비스 KorService2)
 const BASE = 'https://apis.data.go.kr/B551011/KorService2';
+import { fail, searchInput } from './errors.js';
 
 export async function searchTour({ keyword = '', contentTypeId = '12', rows = 10 } = {}) {
-  if (!process.env.DATA_GO_KR_KEY) throw new Error('공공데이터 API 키가 설정되지 않았습니다.');
-  if (!['12','14','15','25','39'].includes(String(contentTypeId))) throw new Error('지원하지 않는 관광정보 유형입니다.');
-  keyword = String(keyword).slice(0, 80);
+  keyword = searchInput(keyword, rows);
+  if (!['12','14','15','25','39'].includes(String(contentTypeId))) throw fail('지원하지 않는 관광정보 유형입니다.');
+  if (!process.env.DATA_GO_KR_KEY) throw fail('관광정보 연결이 아직 준비되지 않았습니다.', 503);
   const params = new URLSearchParams({
     serviceKey: process.env.DATA_GO_KR_KEY, // ★ Decoding 키
     MobileOS: 'ETC',

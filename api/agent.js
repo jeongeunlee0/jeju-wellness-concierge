@@ -49,9 +49,10 @@ const SYSTEM = `너는 JEJU WELLNESS CONCIERGE의 제주 웰니스 경험 큐레
 - 추천은 2~3개 장소 후보와 각 장소의 추천 이유, 데이터로 확인된 사항, 별도 확인이 필요한 사항으로 구분한다.
 - 답변은 한국어로 간결하게 하되 확인된 자료와 추천 의견을 구별한다.`;
 
-export default async function handler(req, res) {
+export function createAgentHandler({ createClient = () => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 20000, maxRetries: 0 }), toolHandlers = runTool, hasKey = () => Boolean(process.env.ANTHROPIC_API_KEY) } = {}) {
+return async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  if (!process.env.ANTHROPIC_API_KEY) return res.status(503).json({ error: 'AI API 키가 설정되지 않았습니다.' });
+  if (!hasKey()) return res.status(503).json({ error: 'AI API 키가 설정되지 않았습니다.' });
   const { message, history = [] } = req.body ?? {};
   if (typeof message !== 'string' || !message.trim() || message.length > 1800 || !Array.isArray(history)) return res.status(400).json({ error: '요청 형식을 확인해 주세요.' });
   const safeHistory = history.slice(-10).filter((m) => m && ['user', 'assistant'].includes(m.role) && typeof m.content === 'string').map((m) => ({ role: m.role, content: m.content.slice(0, 1800) }));
@@ -59,9 +60,9 @@ export default async function handler(req, res) {
   const steps = []; // 화면에 "에이전트가 무엇을 했는지" 보여주기용
 
   try {
-    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+    const client = createClient();
     // ③ 에이전트 루프: 생각 → 도구 호출 → 결과 확인 → (반복) → 최종 답
-    for (let turn = 0; turn < 5; turn++) {
+    for (let turn = 0; turn < 3; turn++) {
       const r = await client.messages.create({
         model: MODEL,
         max_tokens: 1024,
@@ -72,7 +73,8 @@ export default async function handler(req, res) {
 
       if (r.stop_reason !== 'tool_use') {
         const answer = r.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n');
-        return res.status(200).json({ answer, steps });
+        if (!answer.trim()) return res.status(502).json({ error: 'AI가 답변을 반환하지 않았습니다. 다시 시도해 주세요.', steps });
+        return res.status(200).json({ answer, steps, truncated: r.stop_reason === 'max_tokens' });
       }
 
       messages.push({ role: 'assistant', content: r.content }); // Claude의 도구 호출 요청을 대화에 기록
@@ -80,7 +82,7 @@ export default async function handler(req, res) {
       for (const block of r.content) {
         if (block.type !== 'tool_use') continue;
         let result;
-        try { result = typeof runTool[block.name] === 'function' ? await runTool[block.name](block.input ?? {}) : { error: '지원하지 않는 도구' }; }
+        try { result = Object.hasOwn(toolHandlers, block.name) && block.input && typeof block.input === 'object' && !Array.isArray(block.input) ? await toolHandlers[block.name](block.input) : { error: '지원하지 않는 도구' }; }
         catch (e) { result = { error: e.message }; }
         steps.push({ tool: block.name, args: block.input, status: result?.error ? 'error' : 'success', count: Array.isArray(result) ? result.length : 0, result });
         results.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result), is_error: Boolean(result?.error) });
@@ -90,7 +92,10 @@ export default async function handler(req, res) {
     res.status(200).json({ answer: '도구 호출이 너무 많아 중단했어요. 질문을 좁혀 주세요.', steps });
   } catch (e) {
     // 429 = 호출 한도 초과, 401 = 키 오류
-    const status = [401, 429].includes(e.status) ? e.status : 500;
-    res.status(status).json({ steps, error: status === 429 ? 'AI API 사용 한도를 확인해 주세요.' : status === 401 ? 'AI API 인증을 확인해 주세요.' : 'AI 요청에 실패했습니다. 서버 설정과 로그를 확인해 주세요.' });
+    const status = [401, 403, 404, 429].includes(e.status) ? e.status : e.name?.includes('Timeout') ? 504 : 502;
+    res.status(status).json({ steps, error: status === 429 ? 'AI API 사용 한도를 확인해 주세요.' : status === 401 ? 'AI API 인증에 실패했습니다. 서버에 유효한 API 키를 설정해 주세요.' : [403, 404].includes(status) ? 'AI 모델 접근 권한과 모델 설정을 확인해 주세요.' : status === 504 ? 'AI 응답 시간이 초과됐습니다. 다시 시도해 주세요.' : 'AI 요청에 실패했습니다. 서버 설정과 로그를 확인해 주세요.' });
   }
 }
+
+}
+export default createAgentHandler();
