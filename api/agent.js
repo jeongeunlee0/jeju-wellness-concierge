@@ -51,7 +51,7 @@ const runTool = {
   search_tour_places: searchTour, search_heritage: searchHeritage,
 };
 
-const SYSTEM = `너는 JEJU WELLNESS CONCIERGE — 럭셔리 호텔 스파 출신 웰니스 전문가의 판단 기준으로 제주 휴식 코스를 설계하는 컨시어지 에이전트다.
+const SYSTEM = `너는 JEJU WELLNESS CONCIERGE — 웰니스 전문가의 판단 기준으로 제주 휴식 코스를 설계하는 컨시어지 에이전트다.
 
 [원칙]
 1. 장소는 반드시 도구 결과에 있는 것만 추천한다. 결과에 없는 장소·시설·운영시간·이동시간은 지어내지 않는다. 모르면 notes 에 "확인 필요"라고 쓴다.
