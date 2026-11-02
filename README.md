@@ -13,7 +13,7 @@
 ![Claude](https://img.shields.io/badge/Claude-Agent-D97757)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)
 
-**[📦 GitHub](https://github.com/jeongeunlee0)**
+**[🌐 배포 주소](https://jeju-wellness-concierge-seven.vercel.app)** · **[📦 GitHub](https://github.com/jeongeunlee0/jeju-wellness-concierge)**
 
 </div>
 
@@ -53,7 +53,7 @@ flowchart LR
 | 🤖 **AI 컨시어지 (에이전트)** | LLM이 스스로 도구를 골라 호출(날씨 → 대기질 → 장소 검색)하고 코스를 설계 |
 | ✅ **근거 표시** | 호출한 도구 목록·조회 시점 표시, 추천 장소가 API 결과에 실제 있는지 **서버에서 대조(`API 확인` 뱃지)** |
 | 🏝 **3D 동선 지도** | Three.js로 제주 지형을 그리고 추천 코스를 순서대로 핀·점선으로 표시 |
-| 💾 **코스 저장** | 닉네임 기준으로 Supabase에 저장·조회 (새로고침해도 유지) |
+| 💾 **코스 저장** | 로그인 없이 Supabase 익명 사용자별로 저장·조회 (새로고침해도 유지, 남의 코스는 볼 수 없음) |
 | 🌤 **오늘의 컨디션** | 기상청 날씨 + 미세먼지·자외선을 한 줄로 |
 
 ### 추천 판단 기준
@@ -119,21 +119,24 @@ npm run dev                    # http://localhost:5173  (화면 + /api 함께 �
 | `DATA_GO_KR_KEY` | 공공데이터포털 **Decoding** 키 (서버 전용) |
 | `ANTHROPIC_API_KEY` | Claude 키 (서버 전용 — 절대 GitHub에 올리지 않기) |
 
-1. Supabase SQL Editor 에서 [`supabase/schema.sql`](supabase/schema.sql) 실행
-2. 홈 화면 **동작 체크** 카드가 모두 초록이 되는지 확인
-3. 키가 없어도 홈·국가유산·대기질·3D는 동작하고, 코스 저장은 브라우저(localStorage)에 임시 저장됩니다
+1. Supabase 대시보드 → Authentication → Sign In / Providers 에서 **Allow anonymous sign-ins** 켜기
+2. Supabase SQL Editor 에서 [`supabase/schema.sql`](supabase/schema.sql) 실행 (여러 번 실행해도 안전)
+3. 홈 화면 **동작 체크** 카드가 모두 초록이 되는지 확인
+4. 키가 없어도 홈·국가유산·대기질·3D는 동작하고, Supabase 설정이 없으면 코스는 브라우저(localStorage)에 임시 저장됩니다
 
 ## ☁️ 배포 (Vercel)
 
 1. GitHub에 push → Vercel에서 저장소 Import (Framework: Vite)
-2. **Settings → Environment Variables** 에 위 4개 변수 입력 후 Redeploy
+2. **Settings → Environment Variables** 에 위 4개 변수 입력 후 Redeploy (CLI: `vercel env add 이름 production --sensitive`)
 3. `vercel.json` 의 rewrites 가 새로고침 404 를 막아 줍니다
 
 ## 🔒 보안
 
-- 비밀 키(`DATA_GO_KR_KEY`, `ANTHROPIC_API_KEY`)는 `/api` 서버 함수에서만 사용, 브라우저로 내려가지 않음
-- `.env.local` 은 `.gitignore` 로 제외 (`*.local`)
-- 로그인 없는 MVP이므로 Supabase RLS 는 데모용 공개 정책 — **실서비스 전 로그인 기반 정책으로 교체 필요**
+- 비밀 키(`DATA_GO_KR_KEY`, `ANTHROPIC_API_KEY`)는 `/api` 서버 함수에서만 사용하고 브라우저로 내려가지 않습니다. `.env*` 는 `.gitignore` 로 제외됩니다.
+- **저장 데이터 보호**: Supabase 익명 로그인으로 브라우저마다 `auth.uid()` 가 생기고, `courses` 테이블의 RLS 정책이 **본인 행만** 조회·저장·삭제하게 합니다. 로그인 없는 접근(anon)은 권한을 회수했습니다.
+  - 검증: 로그인 없는 읽기·쓰기 401 · 다른 사용자 행 조회 0건 · 타인 행 삭제 0건 · 타인 id 위조 저장 403
+- **에이전트 남용 방지**: `/api/agent` 는 화면의 선택지 값만 허용(그 밖은 400), IP 당 10분 6회 제한(서버 인스턴스 단위 best-effort), 내부 오류 문구는 화면에 노출하지 않습니다.
+- 익명 계정이라 브라우저 데이터를 지우거나 다른 기기에서 접속하면 이전 코스를 볼 수 없습니다. (로그인은 MVP 범위 밖)
 
 ## 🧪 검증 체크리스트
 
@@ -141,13 +144,14 @@ npm run dev                    # http://localhost:5173  (화면 + /api 함께 �
 - [ ] 비 오는 날 / 미세먼지 나쁨일 때 실내 중심으로 바뀌는가
 - [ ] 도구 목록과 조회 시점이 화면에 보이는가
 - [ ] 도구 결과에 없는 장소가 `확인 필요`로 표시되는가
-- [ ] 저장 후 새로고침해도 목록이 남는가
+- [x] 저장 후 새로고침해도 목록이 남는가 (로컬·배포본에서 확인)
+- [x] 다른 사용자의 코스가 보이지 않는가 (RLS 테스트로 확인)
 - [ ] API 오류·키 없음 상태에서 앱이 멈추지 않는가
 
 ## 🗺 MVP 범위
 
 **포함** 선호 입력 · API 4종 · AI 코스·추천 이유 · Supabase 저장 · 3D 동선 · Vercel 배포
-**제외** 예약 · 결제 · 로그인 · 관리자 페이지 (이동 시간·시설 이용 가능 여부는 확보한 데이터 범위 내에서만 안내)
+**제외** 예약 · 결제 · 로그인(익명 계정 사용) · 관리자 페이지 (이동 시간·시설 이용 가능 여부는 확보한 데이터 범위 내에서만 안내)
 
 ## 👤 만든 사람
 
