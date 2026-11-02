@@ -42,6 +42,7 @@ export async function getWeather({ place = '제주시' } = {}) {
   }
   return Object.entries(slots).slice(0, 6).map(([time, v]) => ({
     place, time, temp: Number(v.TMP), sky: SKY[v.SKY] ?? v.SKY,
+    wind: Number(v.WSD), humidity: Number(v.REH), // 풍속(m/s)·습도(%)
     rain: PTY[v.PTY] ?? v.PTY, pop: Number(v.POP), // pop = 강수확률(%)
   }));
 }

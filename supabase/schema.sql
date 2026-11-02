@@ -55,3 +55,29 @@ create policy "wellness_cart select own" on public.wellness_cart for select to a
 create policy "wellness_cart insert own" on public.wellness_cart for insert to authenticated with check ((select auth.uid()) = user_id);
 create policy "wellness_cart delete own" on public.wellness_cart for delete to authenticated using ((select auth.uid()) = user_id);
 create index if not exists wellness_cart_user_idx on public.wellness_cart (user_id, created_at desc);
+
+-- ── 방명록: 누구나 읽고, 로그인(익명 포함)한 사용자가 쓰고, 본인 글만 지움 ──
+create table if not exists public.guestbook (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  nickname text not null check (char_length(nickname) between 1 and 20),
+  message text not null check (char_length(message) between 2 and 300),
+  rating int check (rating between 1 and 5),
+  place text check (place is null or char_length(place) <= 60),
+  created_at timestamptz not null default now()
+);
+alter table public.guestbook enable row level security;
+revoke all on public.guestbook from anon;
+grant select on public.guestbook to anon;
+grant select, insert, delete on public.guestbook to authenticated;
+drop policy if exists "guestbook read all" on public.guestbook;
+drop policy if exists "guestbook insert own" on public.guestbook;
+drop policy if exists "guestbook delete own" on public.guestbook;
+create policy "guestbook read all" on public.guestbook for select to anon, authenticated using (true);
+-- 도배 방지: 같은 사용자는 30초에 한 번만 쓸 수 있음
+create policy "guestbook insert own" on public.guestbook for insert to authenticated with check (
+  (select auth.uid()) = user_id
+  and not exists (select 1 from public.guestbook g where g.user_id = (select auth.uid()) and g.created_at > now() - interval '30 seconds')
+);
+create policy "guestbook delete own" on public.guestbook for delete to authenticated using ((select auth.uid()) = user_id);
+create index if not exists guestbook_created_idx on public.guestbook (created_at desc);

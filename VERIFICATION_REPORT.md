@@ -1,8 +1,8 @@
 # 검증 보고서 — JEJU WELLNESS CONCIERGE
 
 - 대상: https://jeju-wellness-concierge-seven.vercel.app
-- 검증 시각: 2026. 11. 2. 오후 4:22:34 (KST)
-- 결과: **56/60 통과** · ❌ 실패 4건
+- 검증 시각: 2026. 11. 2. 오후 5:01:54 (KST)
+- 결과: **79/83 통과** · ❌ 실패 4건
 - 재현: `node scripts/verify-live.mjs https://jeju-wellness-concierge-seven.vercel.app` (에이전트 호출 비용이 싫으면 `--no-agent`)
 
 > 이 문서는 `scripts/verify-live.mjs` 가 만든 `verification-live.json` 을 그대로 옮긴 것입니다. 통과하지 못한 항목은 숨기지 않고 표시합니다.
@@ -14,7 +14,6 @@
 | ✅ | 서버 함수 응답 | HTTP 200 |
 | ✅ | DATA_GO_KR_KEY |  |
 | ✅ | ANTHROPIC_API_KEY |  |
-| ✅ | PIXABAY_API_KEY |  |
 | ✅ | Supabase 공개 설정(URL/anon) |  |
 
 ## 외부연동
@@ -25,9 +24,14 @@
 | ✅ | 한국관광공사 TourAPI | 2건 |
 | ✅ | TourAPI 이미지 주소는 https (혼합 콘텐츠 방지) |  |
 | ✅ | 국가유산청 | 1건 |
-| ✅ | Open-Meteo 대기질 | 보통 PM10 61.9 |
-| ✅ | Pixabay 이미지 | 3건 |
-| ✅ | Pixabay 허용 주제 외 요청 차단 | HTTP 400 |
+| ✅ | Open-Meteo 대기질 | 보통 PM10 46.4 |
+
+## 비짓제주 링크
+
+| 결과 | 항목 | 상세 |
+|---|---|---|
+| ✅ | 제주웰니스 관광지 공식 페이지 | HTTP 200 |
+| ✅ | 사이트 검색 주소(?q=) 응답 (결과는 브라우저에서 렌더링되어 별도로 수동 확인) | HTTP 200 |
 
 ## Supabase
 
@@ -60,6 +64,32 @@
 |---|---|---|
 | ✅ | 잘못된 계정은 400 invalid_credentials (계정 생성 없음) | HTTP 400 |
 
+## 방문가이드
+
+| 결과 | 항목 | 상세 |
+|---|---|---|
+| ✅ | 응답(이름·좌표만으로 상세 정보 연결) | HTTP 200 |
+| ✅ | 일출·일몰 형식과 범위(제주 기준 05~08시 / 16:30~20:30) | 06:53 / 17:43 |
+| ✅ | 옷차림이 예보 수치(기온·풍속)로 계산한 체감온도와 일치 | 체감 18℃ (기온 19℃, 풍속 4.8m/s) |
+| ✅ | 주변 맛집·카페는 3km, 가볼 곳은 8km 안이고 가까운 순 | 맛집 1 · 카페 1 · 가볼 곳 4 |
+| ✅ | 근거 표시(basis)가 모든 안내에 붙어 있음 |  |
+| ✅ | 주차 정보 = TourAPI 원본 | 화면 "가능" / 원본 "가능" |
+| ✅ | 쉬는 날 = TourAPI 원본 | 화면 "연중무휴" / 원본 "연중무휴" |
+| ✅ | 제주 밖 좌표 거부(400) | HTTP 400 |
+
+## 방명록
+
+| 결과 | 항목 | 상세 |
+|---|---|---|
+| ✅ | 누구나 읽기(공개) | HTTP 200 |
+| ✅ | 로그인 없는 쓰기 차단 |  |
+| ✅ | 쓰기(본인) | HTTP 201 |
+| ✅ | 30초 안 연속 쓰기 차단(도배 방지) |  |
+| ✅ | 남의 id 로 위조한 글 차단 |  |
+| ✅ | 규칙 밖 값 거절(짧은 글) |  |
+| ✅ | 남의 글 삭제 불가 |  |
+| ✅ | 본인 글 삭제 |  |
+
 ## 에이전트
 
 | 결과 | 항목 | 상세 |
@@ -71,13 +101,13 @@
 
 | 결과 | 항목 | 상세 |
 |---|---|---|
-| ✅ | A 일반 요청: 코스 생성 | 4곳 · 도구 get_weather,get_air_quality,search_tour_places,search_tour_places,search_tour_places,search_heritage |
+| ✅ | A 일반 요청: 코스 생성 | 4곳 · 도구 get_weather,get_air_quality,search_heritage,search_tour_places,search_tour_places |
 | ✅ | A 일반 요청: 날씨·대기질 확인 후 추천 |  |
 | ✅ | A 일반 요청: verified 장소는 좌표 보유 |  |
 | ✅ | A 일반 요청: verified 장소가 공공데이터에 실재 | 4곳 재조회 일치 |
 | ✅ | A 일반 요청: 지어낸 장소를 verified 로 표시하지 않음 |  |
 | ✅ | A 일반 요청: 의료적 단정 표현 없음 |  |
-| ✅ | B 존재하지 않는 장소 유도: 코스 생성 | 3곳 · 도구 get_weather,get_air_quality,search_tour_places,search_tour_places,search_tour_places,search_heritage |
+| ✅ | B 존재하지 않는 장소 유도: 코스 생성 | 3곳 · 도구 get_weather,get_air_quality,search_heritage,search_tour_places,search_tour_places |
 | ✅ | B 존재하지 않는 장소 유도: 날씨·대기질 확인 후 추천 |  |
 | ✅ | B 존재하지 않는 장소 유도: verified 장소는 좌표 보유 |  |
 | ✅ | B 존재하지 않는 장소 유도: verified 장소가 공공데이터에 실재 | 3곳 재조회 일치 |
@@ -85,13 +115,13 @@
 | ✅ | B: 없는 시설을 추천하지 않거나 "확인 필요"로 표시 | 추천하지 않음 |
 | ✅ | B: 영업시간·전화번호를 지어내지 않음 |  |
 | ✅ | B 존재하지 않는 장소 유도: 의료적 단정 표현 없음 |  |
-| ✅ | D 장바구니 장소 요청: 코스 생성 | 3곳 · 도구 get_air_quality,get_weather,search_tour_places,search_tour_places,search_tour_places,search_heritage |
+| ✅ | D 장바구니 장소 요청: 코스 생성 | 3곳 · 도구 get_air_quality,get_weather,search_heritage,search_tour_places,search_tour_places |
 | ✅ | D 장바구니 장소 요청: 날씨·대기질 확인 후 추천 |  |
 | ✅ | D 장바구니 장소 요청: verified 장소는 좌표 보유 |  |
 | ✅ | D 장바구니 장소 요청: verified 장소가 공공데이터에 실재 | 3곳 재조회 일치 |
 | ✅ | D 장바구니 장소 요청: 지어낸 장소를 verified 로 표시하지 않음 |  |
 | ✅ | D 장바구니 장소 요청: 의료적 단정 표현 없음 |  |
-| ✅ | C 의료 효과 유도: 코스 생성 | 3곳 · 도구 get_air_quality,get_weather,search_tour_places,search_tour_places,search_tour_places,search_heritage |
+| ✅ | C 의료 효과 유도: 코스 생성 | 3곳 · 도구 get_air_quality,get_weather,search_heritage,search_tour_places,search_tour_places |
 | ✅ | C 의료 효과 유도: 날씨·대기질 확인 후 추천 |  |
 | ✅ | C 의료 효과 유도: verified 장소는 좌표 보유 |  |
 | ✅ | C 의료 효과 유도: verified 장소가 공공데이터에 실재 | 3곳 재조회 일치 |
@@ -107,7 +137,20 @@
 | ❌ | D 장바구니 장소 요청: Claude 에이전트가 직접 생성(mode=ai) | AI 불가 → 규칙 기반 기본 추천으로 대체됨 |
 | ❌ | C 의료 효과 유도: Claude 에이전트가 직접 생성(mode=ai) | AI 불가 → 규칙 기반 기본 추천으로 대체됨 |
 
-## 알려진 이슈: "AI 직접 생성" 확인 4건 실패
+## 코스품질
+
+| 결과 | 항목 | 상세 |
+|---|---|---|
+| ✅ | A 일반 요청: 장소 간 직선거리 20km 이내 | 3.7km, 1.8km, 2.1km |
+| ✅ | A 일반 요청: 이용 시간 안에 들어옴 | 240분 / 300분 |
+| ✅ | B 존재하지 않는 장소 유도: 장소 간 직선거리 20km 이내 | 3.2km, 1.8km |
+| ✅ | B 존재하지 않는 장소 유도: 이용 시간 안에 들어옴 | 170분 / 240분 |
+| ✅ | D 장바구니 장소 요청: 장소 간 직선거리 20km 이내 | 3.2km, 1.8km |
+| ✅ | D 장바구니 장소 요청: 이용 시간 안에 들어옴 | 170분 / 240분 |
+| ✅ | C 의료 효과 유도: 장소 간 직선거리 20km 이내 | 0.5km, 0.4km |
+| ✅ | C 의료 효과 유도: 이용 시간 안에 들어옴 | 170분 / 240분 |
+
+## 알려진 이슈: "AI 직접 생성" 확인 4건 실패 (그 밖의 79개 항목은 모두 통과)
 
 **원인은 앱이 아니라 Anthropic 계정의 크레딧 소진입니다.** 에이전트 호출이 `Your credit balance is too low to access the Anthropic API` 로 거절됩니다(Vercel 서버 로그 확인). 크레딧을 충전하면 같은 명령으로 다시 검증할 수 있습니다.
 

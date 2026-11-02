@@ -143,3 +143,28 @@ button.icon-btn { cursor: pointer; }
 @media (max-width: 767.98px) {
   .hero-text.glass { position: relative; inset: auto; max-width: none; margin: .6rem; padding: 1.2rem; }
 }
+
+/* ── 비짓제주 웰니스 입구 ── */
+.topic-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; }
+.topic-grid.compact { grid-template-columns: repeat(3, 1fr); }
+.topic { display: flex; gap: .85rem; align-items: center; padding: 1rem 1.1rem; border-radius: 1.2rem; text-decoration: none; color: var(--wc-ink); transition: transform .15s; }
+.topic:hover { transform: translateY(-2px); color: var(--wc-ink); }
+.topic-main { grid-column: span 3; background: linear-gradient(135deg, rgba(79,179,200,.28), rgba(140,201,160,.34)); }
+.topic-ico { flex: 0 0 2.7rem; width: 2.7rem; height: 2.7rem; display: grid; place-items: center; border-radius: .95rem; background: rgba(255,255,255,.75); }
+.topic-body { display: flex; flex-direction: column; min-width: 0; }
+.topic-body b { font-size: 1rem; }
+.topic-body span { font-size: .85rem; color: var(--wc-muted); }
+@media (max-width: 991.98px) { .topic-grid, .topic-grid.compact { grid-template-columns: repeat(2, 1fr); } .topic-main { grid-column: span 2; } }
+@media (max-width: 575.98px) { .topic-grid, .topic-grid.compact { grid-template-columns: 1fr; } .topic-main { grid-column: auto; } }
+
+/* ── 사진 대신 쓰는 디자인 면 ── */
+.placeholder-img.art-leaf { background: linear-gradient(135deg, #d7f0e3, #cfeaf0); color: #2e7d6b; }
+.placeholder-img.art-landmark { background: linear-gradient(135deg, #f6e6d8, #f3d9cf); color: #b5654a; }
+.placeholder-img.art-spark { background: linear-gradient(135deg, #efe3f7, #dde6fa); color: #6a55b8; }
+.placeholder-img.art-pin { background: linear-gradient(135deg, #fde9d3, #fbe0dc); color: #c0623a; }
+.mood-art { display: flex; align-items: center; gap: .8rem; padding: 1.1rem 1.3rem; color: var(--wc-ink); font-weight: 800; }
+.mood-forest { background: linear-gradient(120deg, #cfeadb, #e3f3e6); }
+.mood-dusk { background: linear-gradient(120deg, #dfe0f5, #f6e3ec); }
+.mood-oreum { background: linear-gradient(120deg, #f5e7c9, #e2efd2); }
+.mood-sea { background: linear-gradient(120deg, #cde9f2, #dff1ec); }
+.mood-tea { background: linear-gradient(120deg, #f4dfcf, #f8ecd5); }

@@ -29,7 +29,7 @@ export const useAppStore = create(
     (set, get) => ({
       // ① 사용자 표시 이름
       nickname: '',
-      setNickname: (nickname) => set({ nickname: nickname.trim() }),
+      setNickname: (nickname) => set({ nickname: String(nickname).slice(0, 20) }),   // 입력 중 공백은 유지, 표시할 때 다듬음
 
       // ② 알림(토스트)
       toasts: [],
@@ -38,6 +38,11 @@ export const useAppStore = create(
         set({ toasts: [...get().toasts, { id, message, variant }] })
         setTimeout(() => set({ toasts: get().toasts.filter((t) => t.id !== id) }), 2800)
       },
+
+      // 장소 방문 가이드 패널 — { name, lat, lng, id?, type? } | null (RootLayout 의 PlaceGuideHost 가 표시)
+      guidePlace: null,
+      openGuide: (place) => set({ guidePlace: place }),
+      closeGuide: () => set({ guidePlace: null }),
 
       // ③ 로그인 — { id, email, isAnonymous } | null
       user: null,
@@ -136,7 +141,7 @@ export const useAppStore = create(
         const { result, prefs } = get()
         if (!result?.course) return
         const row = {
-          nickname: get().nickname || get().user?.email?.split('@')[0] || '익명',
+          nickname: get().nickname.trim() || get().user?.email?.split('@')[0] || '익명',
           summary: result.course.summary ?? '웰니스 코스',
           preferences: prefs,
           course: result.course,
@@ -165,6 +170,45 @@ export const useAppStore = create(
           courses: get().courses.filter((c) => c.id !== id),
           localCourses: get().localCourses.filter((c) => c.id !== id),
         })
+      },
+
+      // ⑤-2 방명록 — 누구나 읽고, 로그인(익명 포함)한 사용자가 쓰고, 본인 글만 지웁니다 (Supabase guestbook + RLS)
+      guestbook: [],
+      guestbookCount: 0,
+      guestbookLoading: false,
+      loadGuestbook: async (more = false) => {
+        if (!supabase) return
+        set({ guestbookLoading: true })
+        try {
+          await ensureUser()
+          const from = more ? get().guestbook.length : 0
+          const { data, error, count } = await supabase.from('guestbook').select('*', { count: 'exact' })
+            .order('created_at', { ascending: false }).range(from, from + 19)
+          if (error) throw error
+          set({ guestbook: more ? [...get().guestbook, ...data] : data, guestbookCount: count ?? data.length })
+        } catch (e) {
+          get().toast(e.message, 'danger')
+        } finally {
+          set({ guestbookLoading: false })
+        }
+      },
+      addGuestbook: async ({ nickname, message, rating, place }) => {
+        if (!supabase) throw new Error('방명록을 쓰려면 서버 설정이 필요해요')
+        const row = { nickname: nickname.trim().slice(0, 20), message: message.trim().slice(0, 300), rating: rating || null, place: place?.trim() ? place.trim().slice(0, 60) : null }
+        await ensureUser()
+        const { data, error } = await supabase.from('guestbook').insert(row).select().single()
+        if (error) {
+          // 같은 사용자는 30초에 한 번만 쓸 수 있어 RLS 가 거절합니다
+          if (error.code === '42501' || /row-level security/i.test(error.message)) throw new Error('방명록은 30초에 한 번만 남길 수 있어요. 잠시 뒤 다시 시도해 주세요')
+          throw error
+        }
+        set({ guestbook: [data, ...get().guestbook], guestbookCount: get().guestbookCount + 1 })
+        return data
+      },
+      deleteGuestbook: async (id) => {
+        const { error } = await supabase.from('guestbook').delete().eq('id', id)
+        if (error) return get().toast(error.message, 'danger')
+        set({ guestbook: get().guestbook.filter((g) => g.id !== id), guestbookCount: Math.max(0, get().guestbookCount - 1) })
       },
 
       // ⑥ 장바구니 — 가고 싶은 장소를 담아 두는 곳 (예약·결제 없음). Supabase wellness_cart (설정 없으면 localStorage)

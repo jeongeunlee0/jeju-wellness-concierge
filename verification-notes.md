@@ -1,4 +1,4 @@
-## 알려진 이슈: "AI 직접 생성" 확인 4건 실패
+## 알려진 이슈: "AI 직접 생성" 확인 4건 실패 (그 밖의 79개 항목은 모두 통과)
 
 **원인은 앱이 아니라 Anthropic 계정의 크레딧 소진입니다.** 에이전트 호출이 `Your credit balance is too low to access the Anthropic API` 로 거절됩니다(Vercel 서버 로그 확인). 크레딧을 충전하면 같은 명령으로 다시 검증할 수 있습니다.
 

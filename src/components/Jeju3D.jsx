@@ -110,7 +110,7 @@ export default function Jeju3D({ stops = [], height = 480, focusX = 0 }) {
   const cx = pts.length ? pts.reduce((a, p) => a + p[0], 0) / pts.length : focusX
   const cz = pts.length ? pts.reduce((a, p) => a + p[1], 0) / pts.length : 0
   const spread = pts.length > 1 ? Math.max(...pts.map((p) => Math.hypot(p[0] - cx, p[1] - cz))) : 0
-  const dist = pts.length ? Math.min(Math.max(5 + spread * 1.4, 5.5), 13) : 11.5
+  const dist = pts.length ? Math.min(Math.max(6 + spread * 1.6, 8), 14) : 11.5   // 장소가 가까워도 섬 지형이 보이도록 최소 거리 유지
   const path = placed.map((s) => { const [x, z] = toXZ(s.lat, s.lng); return [x, Math.max(terrainHeight(x, z), 0.05) + 0.3, z] })
   return (
     <Canvas camera={{ position: [cx, dist * 0.75, cz + dist], fov: 45 }} style={{ height }} dpr={[1, 2]}>

@@ -10,7 +10,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 
 // 간단한 로그인: 이메일 + 비밀번호. 로그인하지 않아도 앱은 그대로 쓸 수 있어요(익명 계정).
 export default function Login() {
-  const { user, authBusy, signIn, signUp, signOut, toast } = useAppStore()
+  const { user, authBusy, signIn, signUp, signOut, toast, nickname, setNickname } = useAppStore()
   const [mode, setMode] = useState('in')            // 'in' | 'up'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -101,6 +101,10 @@ export default function Login() {
         </section>
 
         <aside className="auth-side">
+          <div className="glass perk d-block">
+            <label htmlFor="nick" className="fw-bold small d-block mb-1"><Icon name="user" size={16} className="me-1" />표시 이름 (메뉴·방명록에 보여요)</label>
+            <input id="nick" className="form-control" maxLength={20} value={nickname} onChange={(e) => setNickname(e.target.value)} placeholder="예: 제주여행자" autoComplete="nickname" />
+          </div>
           <div className="glass perk"><Icon name="shield" size={22} /><div><b>내 것만 보여요</b><span>보안 정책(RLS)으로 다른 사람의 코스·장바구니는 볼 수 없어요</span></div></div>
           <div className="glass perk"><Icon name="cart" size={22} /><div><b>기기를 옮겨도 그대로</b><span>로그인하면 휴대폰과 노트북에서 같은 장바구니를 써요</span></div></div>
           <div className="glass perk"><Icon name="clock" size={22} /><div><b>가입은 선택</b><span>비밀번호는 암호화되어 저장되고, 앱은 비밀번호를 보관하지 않아요</span></div></div>

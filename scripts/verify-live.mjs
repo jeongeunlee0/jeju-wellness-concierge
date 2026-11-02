@@ -8,12 +8,12 @@ const args = process.argv.slice(2)
 const BASE = (args.find((a) => a.startsWith('http')) ?? 'http://localhost:5173').replace(/\/$/, '')
 const SKIP_AGENT = args.includes('--no-agent')
 
-// .env.local 이 있으면 Supabase 공개 설정을 읽는다 (비밀 키는 읽지 않는다)
+// .env.local 이 있으면 Supabase 공개 설정과, 독립 대조용 공공데이터 키를 읽는다 (값은 출력하지 않는다)
 const env = { ...process.env }
 if (existsSync('.env.local')) {
   for (const l of readFileSync('.env.local', 'utf8').split(/\r?\n/)) {
     const i = l.indexOf('=')
-    if (i > 0 && l.startsWith('VITE_')) env[l.slice(0, i)] ??= l.slice(i + 1)
+    if (i > 0 && (l.startsWith('VITE_') || l.startsWith('DATA_GO_KR_KEY='))) env[l.slice(0, i)] ??= l.slice(i + 1)
   }
 }
 const SB_URL = env.VITE_SUPABASE_URL, SB_KEY = env.VITE_SUPABASE_ANON_KEY
@@ -37,7 +37,6 @@ const q = encodeURIComponent
   rec('환경변수', '서버 함수 응답', status === 200 && body?.ok, `HTTP ${status}`)
   rec('환경변수', 'DATA_GO_KR_KEY', body?.hasDataKey)
   rec('환경변수', 'ANTHROPIC_API_KEY', body?.hasClaudeKey)
-  rec('환경변수', 'PIXABAY_API_KEY', body?.hasPixabayKey)
   rec('환경변수', 'Supabase 공개 설정(URL/anon)', SB_URL && SB_KEY)
 }
 
@@ -54,12 +53,18 @@ const tourSamples = []
   rec('외부연동', '국가유산청', Array.isArray(h.body) && h.body.some((x) => x.name?.includes('관덕정')), h.body?.error ?? `${h.body?.length}건`)
   const a = await getJson(`/api/air?place=${q('서귀포시')}`)
   rec('외부연동', 'Open-Meteo 대기질', a.status === 200 && Number.isFinite(a.body?.pm10) && ['좋음', '보통', '민감군 주의', '나쁨'].includes(a.body?.grade), a.body?.error ?? `${a.body?.grade} PM10 ${a.body?.pm10}`)
-  const im = await getJson('/api/images?topic=jeju&count=3')
-  rec('외부연동', 'Pixabay 이미지', Array.isArray(im.body) && im.body.length >= 3 && im.body.every((x) => x.thumb?.startsWith('https://')), im.body?.error ?? `${im.body?.length}건`)
-  const bad = await getJson('/api/images?topic=hack')
-  rec('외부연동', 'Pixabay 허용 주제 외 요청 차단', bad.status === 400, `HTTP ${bad.status}`)
 }
 
+// ── 2-2. 비짓제주 연결 링크 (공식 사이트는 파싱·복제하지 않고 링크로만 연결) ──
+{
+  const WELLNESS = 'https://www.visitjeju.net/kr/jejuStory/wellness?menuId=DOM_200000000010680&cate1cd=cate0000000002'
+  const SEARCH = 'https://www.visitjeju.net/kr/search?q=' + encodeURIComponent('웰니스')
+  const w = await fetch(WELLNESS, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+  const wt = await w.text()
+  rec('비짓제주 링크', '제주웰니스 관광지 공식 페이지', w.status === 200 && wt.includes('제주웰니스'), `HTTP ${w.status}`)
+  const sr = await fetch(SEARCH, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+  rec('비짓제주 링크', '사이트 검색 주소(?q=) 응답 (결과는 브라우저에서 렌더링되어 별도로 수동 확인)', sr.status === 200, `HTTP ${sr.status}`)
+}
 // ── 3. Supabase 보안(RLS) ────────────────────────────────
 if (SB_URL && SB_KEY) {
   const H = (t) => ({ apikey: SB_KEY, Authorization: `Bearer ${t ?? SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' })
@@ -113,6 +118,59 @@ if (SB_URL && SB_KEY) {
   rec('로그인', '잘못된 계정은 400 invalid_credentials (계정 생성 없음)', login.status === 400 && /invalid/i.test(lb.error_code ?? lb.msg ?? lb.error ?? ''), `HTTP ${login.status}`)
 }
 
+// ── 3-3. 방문 가이드: 화면에 보이는 값이 원본 공공데이터와 같은지 독립 대조 ──────
+{
+  const HWASUN = { name: '화순곶자왈 생태탐방숲길', lat: 33.2635062261, lng: 126.3323756109 }
+  const g = await getJson(`/api/guide?name=${q(HWASUN.name)}&lat=${HWASUN.lat}&lng=${HWASUN.lng}`)
+  const d = g.body ?? {}
+  rec('방문가이드', '응답(이름·좌표만으로 상세 정보 연결)', g.status === 200 && d.place?.name === HWASUN.name, `HTTP ${g.status}`)
+  rec('방문가이드', '일출·일몰 형식과 범위(제주 기준 05~08시 / 16:30~20:30)', /^0[5-7]:\d\d$/.test(d.sun?.sunrise ?? '') && /^(1[6-9]|20):\d\d$/.test(d.sun?.sunset ?? ''), `${d.sun?.sunrise} / ${d.sun?.sunset}`)
+  if (d.now && d.outfit) {
+    const feels = Math.round(d.now.temp - (d.now.wind >= 4 ? (d.now.wind - 3) * 0.7 : 0))
+    rec('방문가이드', '옷차림이 예보 수치(기온·풍속)로 계산한 체감온도와 일치', d.outfit.feels === feels, `체감 ${d.outfit.feels}℃ (기온 ${d.now.temp}℃, 풍속 ${d.now.wind}m/s)`)
+  }
+  const near = d.nearby ?? {}
+  const sorted = (a) => a.every((x, i) => i === 0 || a[i - 1].distM <= x.distM)
+  rec('방문가이드', '주변 맛집·카페는 3km, 가볼 곳은 8km 안이고 가까운 순', [...(near.restaurants ?? []), ...(near.cafes ?? [])].every((x) => x.distM <= 3000) && (near.spots ?? []).every((x) => x.distM <= 8000) && sorted(near.restaurants ?? []) && sorted(near.cafes ?? []), `맛집 ${near.restaurants?.length ?? 0} · 카페 ${near.cafes?.length ?? 0} · 가볼 곳 ${near.spots?.length ?? 0}`)
+  rec('방문가이드', '근거 표시(basis)가 모든 안내에 붙어 있음', [...(d.bring ?? []), ...(d.caution ?? []), ...(d.tips ?? [])].every((x) => ['날씨', '공공데이터', '일반'].includes(x.basis)))
+  // 원본 대조: TourAPI 상세(detailIntro2)를 직접 불러 주차·쉬는 날이 화면 값과 같은지 확인
+  if (env.DATA_GO_KR_KEY) {
+    const base = new URLSearchParams({ serviceKey: env.DATA_GO_KR_KEY, MobileOS: 'ETC', MobileApp: 'JejuIP', _type: 'json' })
+    const s = await (await fetch(`https://apis.data.go.kr/B551011/KorService2/searchKeyword2?${base}&keyword=${q(HWASUN.name)}&areaCode=39&numOfRows=5`)).json()
+    const it = [s.response?.body?.items?.item].flat().find((x) => x?.title === HWASUN.name)
+    if (it) {
+      const r = await (await fetch(`https://apis.data.go.kr/B551011/KorService2/detailIntro2?${base}&contentId=${it.contentid}&contentTypeId=${it.contenttypeid}`)).json()
+      const raw = [r.response?.body?.items?.item].flat()[0] ?? {}
+      const norm = (v) => String(v ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() || null
+      rec('방문가이드', '주차 정보 = TourAPI 원본', d.info?.parking === norm(raw.parking), `화면 "${d.info?.parking}" / 원본 "${norm(raw.parking)}"`)
+      rec('방문가이드', '쉬는 날 = TourAPI 원본', d.info?.restDay === norm(raw.restdate), `화면 "${d.info?.restDay}" / 원본 "${norm(raw.restdate)}"`)
+    } else rec('방문가이드', '원본 대조용 장소 검색', false, 'TourAPI 에서 장소를 찾지 못함')
+  }
+  const bad = await getJson('/api/guide?name=x&lat=10&lng=10')
+  rec('방문가이드', '제주 밖 좌표 거부(400)', bad.status === 400, `HTTP ${bad.status}`)
+}
+
+// ── 3-4. 방명록 보안 ───────────────────────────────────
+if (SB_URL && SB_KEY) {
+  const H = (t) => ({ apikey: SB_KEY, Authorization: `Bearer ${t ?? SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=representation' })
+  const anon = async () => (await (await fetch(`${SB_URL}/auth/v1/signup`, { method: 'POST', headers: { apikey: SB_KEY, 'Content-Type': 'application/json' }, body: '{}' })).json()).access_token
+  const A = await anon(), B = await anon()
+  const post = (t, body) => fetch(`${SB_URL}/rest/v1/guestbook`, { method: 'POST', headers: H(t), body: JSON.stringify(body) })
+  const read = await fetch(`${SB_URL}/rest/v1/guestbook?select=id&limit=1`, { headers: H() })
+  rec('방명록', '누구나 읽기(공개)', read.status === 200, `HTTP ${read.status}`)
+  rec('방명록', '로그인 없는 쓰기 차단', [401, 403].includes((await post(null, { nickname: 'v', message: '검증 글' })).status))
+  const ins = await post(A, { nickname: '검증', message: '자동 검증 글', rating: 5 })
+  const row = ins.ok ? (await ins.json())[0] : null
+  rec('방명록', '쓰기(본인)', ins.status === 201 && row?.user_id, `HTTP ${ins.status}`)
+  rec('방명록', '30초 안 연속 쓰기 차단(도배 방지)', (await post(A, { nickname: '검증', message: '연속 글' })).status === 403)
+  rec('방명록', '남의 id 로 위조한 글 차단', (await post(B, { nickname: 'x', message: '위조 글', user_id: row?.user_id })).status === 403)
+  rec('방명록', '규칙 밖 값 거절(짧은 글)', (await post(B, { nickname: 'x', message: 'a' })).status === 400)
+  const delB = await (await fetch(`${SB_URL}/rest/v1/guestbook?id=eq.${row?.id}`, { method: 'DELETE', headers: H(B) })).json()
+  rec('방명록', '남의 글 삭제 불가', delB.length === 0)
+  const delA = await (await fetch(`${SB_URL}/rest/v1/guestbook?id=eq.${row?.id}`, { method: 'DELETE', headers: H(A) })).json()
+  rec('방명록', '본인 글 삭제', delA.length === 1)
+}
+
 // ── 4. 에이전트: 입력 검증 + 환각 검증 ───────────────────────
 const post = (preferences) => getJson('/api/agent', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ preferences }) })
 const BASE_PREFS = { purpose: '스트레스 해소', companion: '혼자', place: '제주시', hours: 4, env: '상관없음', note: '' }
@@ -164,6 +222,15 @@ if (SKIP_AGENT) {
     rec('환각검증', `${c.id}: 날씨·대기질 확인 후 추천`, ['get_weather', 'get_air_quality'].every((t) => r.body.steps.some((s) => s.tool === t)))
     // 서버 표시값 검증: verified 이면 좌표가 있어야 한다
     rec('환각검증', `${c.id}: verified 장소는 좌표 보유`, stops.filter((s) => s.verified).every((s) => s.lat && s.lng))
+    {
+      const R = 6371, rd = Math.PI / 180
+      const km = (a, b) => 2 * R * Math.asin(Math.sqrt(Math.sin(((b.lat - a.lat) * rd) / 2) ** 2 + Math.cos(a.lat * rd) * Math.cos(b.lat * rd) * Math.sin(((b.lng - a.lng) * rd) / 2) ** 2))
+      const pts = stops.filter((s) => s.lat && s.lng)
+      const legs = pts.slice(1).map((s, i) => km(pts[i], s))
+      rec('코스품질', `${c.id}: 장소 간 직선거리 20km 이내`, legs.every((x) => x <= 20), legs.map((x) => `${x.toFixed(1)}km`).join(', ') || '장소 1곳')
+      const total = stops.reduce((a, s) => a + (Number(s.minutes) || 0), 0)
+      rec('코스품질', `${c.id}: 이용 시간 안에 들어옴`, total <= c.prefs.hours * 60, `${total}분 / ${c.prefs.hours * 60}분`)
+    }
     // 독립 검증: 공공 API 에 다시 조회
     const unknown = []
     for (const s of stops.filter((x) => x.verified)) if (!(await existsInPublicData(s.name))) unknown.push(s.name)

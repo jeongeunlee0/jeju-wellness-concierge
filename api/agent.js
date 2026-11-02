@@ -133,7 +133,7 @@ export default async function handler(req, res) {
         // 검증: 추천 장소가 도구 결과에 있는지 대조하고, 있으면 좌표를 붙인다
         course.stops = (course.stops ?? []).map((s) => {
           const hit = known.find((k) => k.name && (k.name === s.name || k.name.includes(s.name) || s.name.includes(k.name)));
-          return { ...s, verified: Boolean(hit), lat: hit?.lat ? Number(hit.lat) : null, lng: hit?.lng ? Number(hit.lng) : null, addr: hit?.addr ?? null };
+          return { ...s, verified: Boolean(hit), lat: hit?.lat ? Number(hit.lat) : null, lng: hit?.lng ? Number(hit.lng) : null, addr: hit?.addr ?? null, id: hit?.id ?? null, type: hit?.type ?? null };
         });
         return res.status(200).json({ course, steps, mode: 'ai', generatedAt: new Date().toISOString() });
       }
@@ -146,7 +146,7 @@ export default async function handler(req, res) {
         try { result = await runTool[block.name](block.input ?? {}); }
         catch (e) { result = { error: e.message }; }
         if (Array.isArray(result)) {
-          for (const it of result) known.push({ name: it.title ?? it.name, lat: it.lat, lng: it.lng, addr: it.addr ?? it.city });
+          for (const it of result) known.push({ name: it.title ?? it.name, lat: it.lat, lng: it.lng, addr: it.addr ?? it.city, id: it.id ?? null, type: it.type ?? null });
         }
         steps.push({ tool: block.name, args: block.input, count: Array.isArray(result) ? result.length : result?.error ? 0 : 1, error: result?.error });
         results.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result) });

@@ -11,7 +11,7 @@ const fmt = (min) => (min >= 60 ? `${Math.floor(min / 60)}시간${min % 60 ? ` $
 
 // 장바구니: 가고 싶은 장소를 모아 시간을 가늠하고, 담은 장소로 AI 코스를 다시 짜 달라고 요청합니다. (예약·결제는 없음)
 export default function Cart() {
-  const { cart, cartLoading, loadCart, removeFromCart, clearCart, prefs, setPrefs, toast } = useAppStore()
+  const { cart, cartLoading, loadCart, removeFromCart, clearCart, prefs, setPrefs, toast, openGuide } = useAppStore()
   const navigate = useNavigate()
   const [copied, setCopied] = useState(false)
 
@@ -36,7 +36,7 @@ export default function Cart() {
 
   return (
     <>
-      <PageHeader icon="cart" title="장바구니" subtitle="가고 싶은 장소를 담아 두고 시간을 맞춰 보세요 (예약·결제는 없어요)" />
+      <PageHeader icon="cart" title="장바구니" subtitle="가고 싶은 장소를 담아 두고 하루 시간에 맞는지 확인하세요" />
 
       {cartLoading && cart.length === 0 ? <Loading /> : cart.length === 0 ? (
         <div className="text-center py-5">
@@ -58,6 +58,9 @@ export default function Cart() {
                   <div className="mt-1 d-flex flex-wrap gap-1 align-items-center">
                     <Badge bg="light" text="dark" className="border fw-normal">{SOURCE[c.source] ?? c.source}</Badge>
                     <Badge bg="light" text="dark" className="border fw-normal"><Icon name="clock" size={12} className="me-1" />{fmt(c.minutes)}</Badge>
+                    {c.lat && c.lng && (
+                      <button type="button" className="act primary" onClick={() => openGuide({ name: c.name, lat: c.lat, lng: c.lng })}><Icon name="info" size={13} />방문 가이드</button>
+                    )}
                     {c.lat && c.lng && (
                       <a className="small ms-1" href={`https://www.google.com/maps/search/?api=1&query=${c.lat},${c.lng}`} target="_blank" rel="noopener noreferrer">
                         <Icon name="pin" size={13} className="me-1" />지도
