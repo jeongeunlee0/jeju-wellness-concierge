@@ -30,6 +30,10 @@ export async function getWeather({ place = '제주시' } = {}) {
   try { data = JSON.parse(text); }
   catch { throw new Error('기상청 응답이 JSON이 아님: ' + text.slice(0, 120)); }
 
+  const err = data?.OpenAPI_ServiceResponse?.cmmMsgHeader;
+  if (err) throw new Error('기상청 API 오류: ' + (err.returnAuthMsg ?? err.errMsg) + ' — 공공데이터포털에서 이 API 활용신청·승인을 확인하세요');
+  const header = data?.response?.header;
+  if (header && header.resultCode !== '00') throw new Error('기상청 API 오류: ' + header.resultMsg);
   const items = data?.response?.body?.items?.item ?? [];
   const slots = {}; // "날짜 시간" → { TMP, SKY, PTY, POP }
   for (const it of items) {

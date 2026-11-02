@@ -22,6 +22,8 @@ export async function searchTour({ keyword = '', contentTypeId = '12', rows = 10
   try { data = JSON.parse(text); }
   catch { throw new Error('TourAPI 응답이 JSON이 아님: ' + text.slice(0, 120)); }
 
+  const err = data?.OpenAPI_ServiceResponse?.cmmMsgHeader;
+  if (err) throw new Error('TourAPI 오류: ' + (err.returnAuthMsg ?? err.errMsg));
   const item = data?.response?.body?.items?.item;
   const list = !item ? [] : Array.isArray(item) ? item : [item];
   return list.map((p) => ({
