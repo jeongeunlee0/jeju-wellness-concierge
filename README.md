@@ -35,3 +35,8 @@ Claude가 search_tour_places, get_weather, search_heritage 중 필요한 도구�
 - GitHub/Vercel/모바일: 최신 VERIFICATION_REPORT.md 참조
 
 의료적 진단과 치료를 제공하지 않습니다. 추천 중 영업시간·혼잡도·정확한 이동시간은 해당 도구로 확인되지 않습니다.
+
+## 배포 주소
+https://jeju-wellness-concierge.vercel.app
+
+실제 응답 재검증: node scripts/verify-live.mjs. 현재 3개 키 연동이 미완료여서 exit 1을 반환합니다. 자세한 성공·차단 근거는 VERIFICATION_REPORT.md와 verification-production.json에 기록했습니다.

@@ -1,0 +1,47 @@
+{
+  "timestamp": "2026-11-02T05:35:14.749Z",
+  "base": "http://127.0.0.1:5173",
+  "checks": [
+    {
+      "name": "tour",
+      "status": 500,
+      "passed": false,
+      "error": "공공데이터 API 키가 설정되지 않았습니다."
+    },
+    {
+      "name": "weather",
+      "status": 500,
+      "passed": false,
+      "error": "공공데이터 API 키가 설정되지 않았습니다."
+    },
+    {
+      "name": "heritage",
+      "status": 200,
+      "passed": true,
+      "count": 10,
+      "first": {
+        "name": "제주 관덕정",
+        "kind": "보물",
+        "city": "제주시",
+        "lat": 33.5133609436166,
+        "lng": 126.521489474308
+      }
+    },
+    {
+      "name": "agent",
+      "status": 503,
+      "passed": false,
+      "error": "AI API 키가 설정되지 않았습니다."
+    },
+    {
+      "name": "Supabase persistence and RLS",
+      "passed": true,
+      "ownRows": 1,
+      "otherUserRows": 0
+    },
+    {
+      "name": "Test row cleanup",
+      "passed": true
+    }
+  ]
+}
