@@ -1,0 +1,235 @@
+{
+  "verifiedAt": "2026-11-02T05:56:28Z",
+  "base": "https://jeju-wellness-concierge.vercel.app",
+  "checks": [
+    {
+      "name": "tour",
+      "httpStatus": 200,
+      "count": 10,
+      "result": [
+        {
+          "id": "1884191",
+          "title": "가마오름",
+          "addr": "제주특별자치도 제주시 한경면 청수리",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/72/3477972_image2_1.jpg",
+          "lng": "126.2466098987",
+          "lat": "33.3057279944",
+          "type": "12"
+        },
+        {
+          "id": "1884505",
+          "title": "가문이오름(감은이오름)",
+          "addr": "제주특별자치도 서귀포시 표선면 가시리",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/92/3477392_image2_1.jpg",
+          "lng": "126.6876111209",
+          "lat": "33.4018299117",
+          "type": "12"
+        },
+        {
+          "id": "1884521",
+          "title": "가새기오름",
+          "addr": "제주특별자치도 제주시 오라삼동",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/82/3477882_image2_1.jpg",
+          "lng": "126.5038611983",
+          "lat": "33.4893700755",
+          "type": "12"
+        },
+        {
+          "id": "1885746",
+          "title": "가세오름",
+          "addr": "제주특별자치도 서귀포시 표선면 녹산로 554",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/61/3477261_image2_1.jpg",
+          "lng": "126.7231832338",
+          "lat": "33.3931758821",
+          "type": "12"
+        },
+        {
+          "id": "3026711",
+          "title": "가시리국산화풍력발전단지",
+          "addr": "제주특별자치도 서귀포시 표선면 녹산로 464-78",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/92/3026692_image2_1.jpg",
+          "lng": "126.7341100468",
+          "lat": "33.3939370848",
+          "type": "12"
+        },
+        {
+          "id": "1887381",
+          "title": "갈마못(갈뫼못)",
+          "addr": "제주특별자치도 서귀포시 표선면 성읍리",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/31/3477231_image2_1.jpg",
+          "lng": "126.8116979172",
+          "lat": "33.3873529469",
+          "type": "12"
+        },
+        {
+          "id": "1887493",
+          "title": "감낭오름",
+          "addr": "제주특별자치도 서귀포시 안덕면 동광리",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/06/3477406_image2_1.jpg",
+          "lng": "126.3497088457",
+          "lat": "33.3250274801",
+          "type": "12"
+        },
+        {
+          "id": "1887866",
+          "title": "갑선이오름",
+          "addr": "제주특별자치도 서귀포시 표선면 가시리",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/45/3523545_image2_1.jpg",
+          "lng": "126.7818122232",
+          "lat": "33.3608276172",
+          "type": "12"
+        },
+        {
+          "id": "2779517",
+          "title": "강정포구",
+          "addr": "제주특별자치도 서귀포시 말질로 291",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/95/3552095_image2_1.jpg",
+          "lng": "126.4750196034",
+          "lat": "33.2271624839",
+          "type": "12"
+        },
+        {
+          "id": "1887873",
+          "title": "개오름",
+          "addr": "제주특별자치도 서귀포시 표선면 성읍이리로57번길 162",
+          "image": "http://tong.visitkorea.or.kr/cms/resource/94/3526894_image2_1.jpg",
+          "lng": "126.7682286281",
+          "lat": "33.4238621040",
+          "type": "12"
+        }
+      ]
+    },
+    {
+      "name": "weather",
+      "httpStatus": 200,
+      "count": 6,
+      "result": [
+        {
+          "place": "제주시",
+          "time": "20261102 1500",
+          "temp": 18,
+          "sky": "맑음",
+          "rain": "없음",
+          "pop": 0
+        },
+        {
+          "place": "제주시",
+          "time": "20261102 1600",
+          "temp": 18,
+          "sky": "맑음",
+          "rain": "없음",
+          "pop": 0
+        },
+        {
+          "place": "제주시",
+          "time": "20261102 1700",
+          "temp": 17,
+          "sky": "맑음",
+          "rain": "없음",
+          "pop": 0
+        },
+        {
+          "place": "제주시",
+          "time": "20261102 1800",
+          "temp": 16,
+          "sky": "맑음",
+          "rain": "없음",
+          "pop": 0
+        },
+        {
+          "place": "제주시",
+          "time": "20261102 1900",
+          "temp": 15,
+          "sky": "맑음",
+          "rain": "없음",
+          "pop": 0
+        },
+        {
+          "place": "제주시",
+          "time": "20261102 2000",
+          "temp": 15,
+          "sky": "맑음",
+          "rain": "없음",
+          "pop": 0
+        }
+      ]
+    },
+    {
+      "name": "heritage",
+      "httpStatus": 200,
+      "count": 10,
+      "result": [
+        {
+          "name": "제주 관덕정",
+          "kind": "보물",
+          "city": "제주시",
+          "lat": 33.5133609436166,
+          "lng": 126.521489474308
+        },
+        {
+          "name": "김정희 종가 유물 일괄",
+          "kind": "보물",
+          "city": "서귀포시",
+          "lat": 33.2541205,
+          "lng": 126.560076
+        },
+        {
+          "name": "안중근의사 유묵 - 천여불수반수기앙이",
+          "kind": "보물",
+          "city": "제주시",
+          "lat": 0,
+          "lng": 0
+        },
+        {
+          "name": "제주 불탑사 오층석탑",
+          "kind": "보물",
+          "city": "제주시",
+          "lat": 33.5293780667049,
+          "lng": 126.598544211899
+        },
+        {
+          "name": "동여비고",
+          "kind": "보물",
+          "city": "제주시",
+          "lat": 0,
+          "lng": 0
+        },
+        {
+          "name": "제주향교 대성전",
+          "kind": "보물",
+          "city": "제주시",
+          "lat": 33.5115522839389,
+          "lng": 126.515617912806
+        },
+        {
+          "name": "이익태 지영록",
+          "kind": "보물",
+          "city": "제주시",
+          "lat": 0,
+          "lng": 0
+        },
+        {
+          "name": "제주 삼성혈",
+          "kind": "사적",
+          "city": "제주시",
+          "lat": 33.5043012717768,
+          "lng": 126.528872186943
+        },
+        {
+          "name": "제주목 관아",
+          "kind": "사적",
+          "city": "제주시",
+          "lat": 33.513452,
+          "lng": 126.521972
+        },
+        {
+          "name": "제주 항파두리 항몽 유적",
+          "kind": "사적",
+          "city": "제주시",
+          "lat": 33.45227993,
+          "lng": 126.409011
+        }
+      ]
+    }
+  ]
+}

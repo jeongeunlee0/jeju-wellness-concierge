@@ -10,7 +10,7 @@
 | 국가유산청 | 통과 | 배포 /api/heritage HTTP 200, 10건 |
 | Supabase 저장·새로고침 | 통과 | 모바일 화면에서 관광지 저장 후 새로고침해도 제주해녀항일운동기념탑 조회. 국가유산 저장도 유지 |
 | Supabase 사용자 격리 | 통과 | 실제 별도 게스트 세션 조회 0건, 본인 세션 복원 조회 1건. 검증용 행 삭제 성공 |
-| Claude 실제 tool use | 통과 | get_weather 성공 6건, search_tour_places 성공 2건, search_heritage 성공 10건을 각각 1회 호출 |
+| Claude 실제 tool use | 통과 | get_weather 성공 6건, search_tour_places 성공 10건, search_heritage 성공 10건을 각각 1회 호출 |
 | 도구 기록 화면 | 통과 | 도구명·입력·상태·건수·실제 결과 펼침 표시. 성공/실패 혼합 흐름도 실제 확인 |
 | GitHub | 완료 | 비공개 저장소에 전체 소스·lockfile·검사 코드 업로드 |
 | Vercel | 완료 | production READY 및 공개 앱 URL |
@@ -19,7 +19,8 @@
 앱: https://jeju-wellness-concierge.vercel.app
 저장소: https://github.com/jeongeunlee0/jeju-wellness-concierge (비공개)
 세 API 정상 응답 및 세 도구 성공 확인 배포: dpl_DCtMH39QaC9naV7isJPHNtCPdR7y
-이후 간결한 답변 지침을 추가한 보완본을 같은 production 주소에 배포합니다.
+간결한 답변 지침 보완본 배포도 READY 확인: dpl_3tuMooyxjRCNeYp2qd8hvPxZjpQA
+배포 소스 commit: 1fb9620903ca72bf10ece5b8747e2f1cace8a895
 
 ## 실제 실행 증거
 - public-api-final.json: 관광공사 10건/기상청 6개 시간대/국가유산 10건의 200 응답
@@ -52,3 +53,6 @@
 - Vercel 생성 런타임의 Node url.parse deprecation 경고는 관찰됐습니다. 앱에 직접 url.parse 호출은 없습니다.
 - 오래된 verification-live.json/verification-production.json은 키 설정 전 과거 결과입니다. 현재 상태의 근거는 이 보고서와 final 증거 파일입니다.
 - 영업시간·현장 혼잡·정확한 이동시간·의료적 효능은 이 앱의 도구로 검증하지 않습니다.
+
+## 최종 보완본 재검증
+production dpl_3tuMooyxjRCNeYp2qd8hvPxZjpQA에서 세 도구 각각 1회 성공(관광지 10건, 날씨 6개 시간대, 국가유산 10건), 답변 잘림 없음, 바람·특보 확인 불가 안내를 실제 확인했습니다. evidence/claude-all-tools-final.json 참고.
