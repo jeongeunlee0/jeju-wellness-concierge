@@ -28,10 +28,13 @@ export const useAppStore = create(
       setPrefs: (patch) => set({ prefs: { ...get().prefs, ...patch } }),
       result: null,           // { course, steps, generatedAt, raw }
       planning: false,
+      planError: '',
+      resultPrefs: null,
       requestCourse: async () => {
-        set({ planning: true, result: null })
-        try { set({ result: await planCourse(get().prefs) }) }
-        catch (e) { get().toast(e.message, 'danger') }
+        const requestedPrefs = { ...get().prefs };
+        set({ planning: true, result: null, planError: '' })
+        try { set({ result: await planCourse(requestedPrefs), resultPrefs: requestedPrefs }) }
+        catch (e) { set({ planError: e.message }); get().toast(e.message, 'danger') }
         finally { set({ planning: false }) }
       },
 
@@ -55,7 +58,7 @@ export const useAppStore = create(
         }
       },
       saveCourse: async () => {
-        const { result, prefs } = get()
+        const { result } = get(); const prefs = get().resultPrefs ?? get().prefs
         if (!result?.course) return
         const row = {
           nickname: get().nickname || '익명',

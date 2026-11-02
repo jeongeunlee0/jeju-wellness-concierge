@@ -5,7 +5,7 @@ import * as THREE from 'three'
 
 // ── 좌표 변환: 위도·경도 → 3D 좌표 (1 unit ≈ 5km) ─────────
 const CENTER = { lat: 33.38, lng: 126.56 }
-export const toXZ = (lat, lng) => [(lng - CENTER.lng) * 18.6, (CENTER.lat - lat) * 22.2]
+const toXZ = (lat, lng) => [(lng - CENTER.lng) * 18.6, (CENTER.lat - lat) * 22.2]
 
 const SIZE = [20, 11]   // 지형 평면 크기
 const A = 7.9, B = 3.6  // 섬 타원 반지름(x, z)

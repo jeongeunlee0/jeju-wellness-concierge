@@ -18,7 +18,7 @@ const TTL = 24 * 3600e3
 const cache = new Map()
 
 export async function getTopicImages({ topic = 'jeju', count = 6 } = {}) {
-  const q = TOPICS[topic]
+  const q = Object.hasOwn(TOPICS, topic) ? TOPICS[topic] : null
   if (!q) throw new Error('허용되지 않은 주제예요')
   if (!process.env.PIXABAY_API_KEY) throw new Error('PIXABAY_API_KEY 가 설정되지 않았어요 (.env.local / Vercel 환경변수 확인)')
   const n = Math.min(Math.max(Number(count) || 6, 1), 12)
@@ -30,7 +30,7 @@ export async function getTopicImages({ topic = 'jeju', count = 6 } = {}) {
     key: process.env.PIXABAY_API_KEY, q, image_type: 'photo', orientation: 'horizontal',
     safesearch: 'true', order: 'popular', per_page: '40',
   })
-  const r = await fetch(`https://pixabay.com/api/?${params}`)
+  const r = await fetch(`https://pixabay.com/api/?${params}`, { signal: AbortSignal.timeout(10000) })
   if (!r.ok) throw new Error(`Pixabay API 오류 (${r.status})`)
   const data = await r.json()
   // 분위기에 맞지 않는 동물·인물 사진은 거르고, 제주 태그가 붙은 사진을 앞에 둔다

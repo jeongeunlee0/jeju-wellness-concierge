@@ -18,17 +18,19 @@ function baseDateTime() {
 
 export async function getWeather({ place = '제주시' } = {}) {
   if (!process.env.DATA_GO_KR_KEY) throw new Error('DATA_GO_KR_KEY 가 설정되지 않았어요 (.env.local / Vercel 환경변수 확인)');
-  const [nx, ny] = GRID[place] ?? GRID['제주시'];
+  if (!Object.hasOwn(GRID, place)) throw new Error('지원하지 않는 지역');
+  const [nx, ny] = GRID[place];
   const params = new URLSearchParams({
     serviceKey: process.env.DATA_GO_KR_KEY,
     dataType: 'JSON', numOfRows: '300', pageNo: '1',
     nx: String(nx), ny: String(ny), ...baseDateTime(),
   });
-  const r = await fetch(`${BASE}?${params}`);
+  const r = await fetch(`${BASE}?${params}`, { signal: AbortSignal.timeout(12000) });
+  if (!r.ok) throw new Error('기상청 조회 실패');
   const text = await r.text();
   let data;
   try { data = JSON.parse(text); }
-  catch { throw new Error('기상청 응답이 JSON이 아님: ' + text.slice(0, 120)); }
+  catch { throw new Error('기상청 응답 형식 오류'); }
 
   const err = data?.OpenAPI_ServiceResponse?.cmmMsgHeader;
   if (err) throw new Error('기상청 API 오류: ' + (err.returnAuthMsg ?? err.errMsg) + ' — 공공데이터포털에서 이 API 활용신청·승인을 확인하세요');
@@ -40,7 +42,9 @@ export async function getWeather({ place = '제주시' } = {}) {
     const key = `${it.fcstDate} ${it.fcstTime}`;
     (slots[key] ??= {})[it.category] = it.fcstValue;
   }
-  return Object.entries(slots).slice(0, 6).map(([time, v]) => ({
+  const current = new Date(Date.now() + 9 * 3600e3).toISOString();
+  const cutoff = current.slice(0,10).replaceAll('-', '') + ' ' + current.slice(11,13) + '00';
+  return Object.entries(slots).filter(([t])=>t >= cutoff).sort(([a],[b])=>a.localeCompare(b)).slice(0, 6).map(([time, v]) => ({
     place, time, temp: Number(v.TMP), sky: SKY[v.SKY] ?? v.SKY,
     rain: PTY[v.PTY] ?? v.PTY, pop: Number(v.POP), // pop = 강수확률(%)
   }));

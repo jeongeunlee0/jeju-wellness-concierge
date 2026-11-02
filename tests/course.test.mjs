@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { validateCourse } from '../server/course.js';
+const known = [{ name:'제주 관덕정', source:'heritage', lat:33.51, lng:126.52, addr:'제주시' }];
+const make = patch => ({ summary:'문화와 휴식', stops:[{ name:'제주 관덕정', source:'heritage', minutes:45, reason:'문화유산을 감상하는 시간', ...patch }] });
+test('matches only actual tool names, keeps source coordinates',()=>{const c=validateCourse(make(),known,2);assert.equal(c.stops[0].verified,true);assert.equal(c.stops[0].lat,33.51)});
+test('rejects partial and invented names',()=>{assert.equal(validateCourse(make({name:'관덕정 VIP 스파'}),known,2),null);assert.equal(validateCourse(make({name:'제주'}),known,2),null)});
+test('rejects wrong source and excessive stay budget',()=>{assert.equal(validateCourse(make({source:'tour'}),known,2),null);assert.equal(validateCourse(make({minutes:180}),known,2),null)});
+test('does not mark missing coordinates verified',()=>{assert.equal(validateCourse(make(),[{...known[0],lat:0,lng:0}],2).stops[0].verified,false)});
+test('invalid model schema returns no publishable course',()=>{assert.equal(validateCourse({stops:'wrong'},known,2),null);assert.equal(validateCourse(make({minutes:-10}),known,2),null)});

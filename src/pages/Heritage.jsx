@@ -18,15 +18,15 @@ export default function Heritage() {
     catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
-  useEffect(() => { search() }, [])
+  useEffect(() => { let active=true; fetchHeritage().then(data=>{if(active) setList(data)}).catch(err=>{if(active)setError(err.message)}).finally(()=>{if(active)setLoading(false)});return ()=>{active=false} }, [])
 
   return (
     <>
       <PageHeader icon="bank" title="문화·유산" subtitle="국가유산청 오픈API — 조용히 거닐며 제주의 시간을 느끼는 코스의 재료" />
       <Form onSubmit={search} className="mb-4">
         <InputGroup>
-          <Form.Control value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="예: 관덕정, 성읍, 향교" />
-          <Button type="submit"><i className="bi bi-search" /></Button>
+          <Form.Control aria-label="장소 검색어" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="예: 관덕정, 성읍, 향교" />
+          <Button type="submit" aria-label="검색"><i className="bi bi-search" /></Button>
         </InputGroup>
       </Form>
       <ErrorAlert error={error} />

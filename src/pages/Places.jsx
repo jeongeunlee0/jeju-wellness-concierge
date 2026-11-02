@@ -23,18 +23,18 @@ export default function Places() {
     catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
-  useEffect(() => { search() }, [])
+  useEffect(() => { let active=true; fetchPlaces('숲', '12').then(data=>{if(active) setPlaces(data)}).catch(err=>{if(active)setError(err.message)}).finally(()=>{if(active)setLoading(false)});return ()=>{active=false} }, [])
 
   return (
     <>
       <PageHeader icon="tree" title="웰니스 장소" subtitle="한국관광공사 TourAPI — 휴식 키워드로 제주의 장소를 직접 찾아보세요" />
       <Form onSubmit={search} className="mb-2">
         <InputGroup>
-          <Form.Select value={type} onChange={(e) => setType(e.target.value)} style={{ maxWidth: 140 }}>
+          <Form.Select aria-label="장소 유형" value={type} onChange={(e) => setType(e.target.value)} style={{ maxWidth: 140 }}>
             {Object.entries(TYPES).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
           </Form.Select>
-          <Form.Control value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="예: 스파, 숲, 해변" />
-          <Button type="submit"><i className="bi bi-search" /></Button>
+          <Form.Control aria-label="장소 검색어" value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="예: 스파, 숲, 해변" />
+          <Button type="submit" aria-label="검색"><i className="bi bi-search" /></Button>
         </InputGroup>
       </Form>
       <div className="d-flex flex-wrap gap-2 mb-4">

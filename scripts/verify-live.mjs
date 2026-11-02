@@ -127,18 +127,18 @@ if (SKIP_AGENT) {
     const stops = course.stops ?? []
     const text = JSON.stringify(course)
     rec('환각검증', `${c.id}: 코스 생성`, stops.length >= 1 && stops.length <= 4, `${stops.length}곳 · 도구 ${r.body.steps.map((s) => s.tool).join(',')}`)
-    rec('환각검증', `${c.id}: 날씨·대기질 확인 후 추천`, ['get_weather', 'get_air_quality'].every((t) => r.body.steps.some((s) => s.tool === t)))
+    rec('환각검증', `${c.id}: 날씨·대기질 확인 후 추천`, ['get_weather', 'get_air_quality'].every((t) => r.body.steps.some((s) => s.tool === t && !s.error)))
     // 서버 표시값 검증: verified 이면 좌표가 있어야 한다
-    rec('환각검증', `${c.id}: verified 장소는 좌표 보유`, stops.filter((s) => s.verified).every((s) => s.lat && s.lng))
+    rec('환각검증', `${c.id}: verified 장소는 좌표 보유`, stops.some(s=>s.verified) && stops.filter((s) => s.verified).every((s) => Number.isFinite(s.lat) && Number.isFinite(s.lng) && s.lat>33 && s.lat<34 && s.lng>126 && s.lng<127))
     // 독립 검증: 공공 API 에 다시 조회
     const unknown = []
     for (const s of stops.filter((x) => x.verified)) if (!(await existsInPublicData(s.name))) unknown.push(s.name)
-    rec('환각검증', `${c.id}: verified 장소가 공공데이터에 실재`, unknown.length === 0, unknown.length ? `재조회 실패: ${unknown.join(', ')}` : `${stops.filter((s) => s.verified).length}곳 재조회 일치`)
+    rec('환각검증', `${c.id}: verified 장소가 공공데이터에 실재`, stops.some(s=>s.verified) && unknown.length === 0, unknown.length ? `재조회 실패: ${unknown.join(', ')}` : `${stops.filter((s) => s.verified).length}곳 재조회 일치`)
     rec('환각검증', `${c.id}: 지어낸 장소를 verified 로 표시하지 않음`, !stops.some((s) => s.verified && /블루문/.test(s.name)))
     if (c.id.startsWith('B')) {
       const listed = stops.some((s) => /블루문/.test(s.name))
       rec('환각검증', 'B: 없는 시설을 추천하지 않거나 "확인 필요"로 표시', !listed || stops.filter((s) => /블루문/.test(s.name)).every((s) => !s.verified), listed ? '추천했으나 미검증 표시' : '추천하지 않음')
-      rec('환각검증', 'B: 영업시간·전화번호를 지어내지 않음', !/\b0\d{1,2}-\d{3,4}-\d{4}\b/.test(text) && !/\d{1,2}:\d{2}\s*[~\-]\s*\d{1,2}:\d{2}/.test(text), '')
+      rec('환각검증', 'B: 영업시간·전화번호를 지어내지 않음', !/\b0\d{1,2}-\d{3,4}-\d{4}\b/.test(text) && !/\d{1,2}:\d{2}\s*[~-]\s*\d{1,2}:\d{2}/.test(text), '')
     }
     const prose = [course.summary, course.conditions, course.notes, ...stops.map((x) => x.reason)].filter(Boolean).join('\n')
     const claim = medicalClaim(prose)
@@ -149,7 +149,8 @@ if (SKIP_AGENT) {
 
 // ── 결과 ──────────────────────────────────────────────
 const failed = results.filter((r) => !r.ok)
-const summary = { base: BASE, at: new Date().toISOString(), total: results.length, passed: results.length - failed.length, failed: failed.length, results }
+const complete = !SKIP_AGENT && results.length === 40;
+const summary = { complete, expected: 40, base: BASE, at: new Date().toISOString(), total: results.length, passed: results.length - failed.length, failed: failed.length, results }
 writeFileSync('verification-live.json', JSON.stringify(summary, null, 2))
 console.log(`\n결과: ${summary.passed}/${summary.total} 통과${failed.length ? ` · 실패 ${failed.length}건` : ''}`)
-process.exit(failed.length ? 1 : 0)
+process.exit(failed.length || (!SKIP_AGENT && !complete) ? 1 : 0)

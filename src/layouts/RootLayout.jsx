@@ -9,10 +9,11 @@ export default function RootLayout() {
 
   return (
     <div className="d-flex flex-column min-vh-100">
-      <Navbar expand="md" className="app-nav" collapseOnSelect sticky="top">
+      <a href="#main-content" className="skip-link">본문으로 바로가기</a>
+      <Navbar expand="lg" className="app-nav" collapseOnSelect sticky="top">
         <Container>
           <Navbar.Brand as={NavLink} to="/" className="fw-bold">
-            <i className="bi bi-flower2 me-2 text-primary" />JEJU WELLNESS CONCIERGE
+            <i className="bi bi-flower2 brand-mark" aria-hidden="true" /><span className="brand-copy">JEJU WELLNESS<small>CONCIERGE</small></span>
           </Navbar.Brand>
           <Navbar.Toggle aria-controls="main-nav" />
           <Navbar.Collapse id="main-nav">
@@ -28,7 +29,7 @@ export default function RootLayout() {
         </Container>
       </Navbar>
 
-      <main className="flex-grow-1 py-4">
+      <main id="main-content" className="flex-grow-1 py-4" tabIndex={-1}>
         <Container><Outlet /></Container>
       </main>
 

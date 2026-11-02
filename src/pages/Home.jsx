@@ -1,107 +1,31 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { Button, Card, Col, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
-import { ping } from '../api/client'
-import { ensureUser, isSupabaseReady, supabase } from '../lib/supabase'
 import ConditionsBar from '../components/ConditionsBar'
-import { Loading } from '../components/Status'
 import MoodGallery from '../components/MoodGallery'
-
+import { PHOTOS } from '../lib/photos'
 const Jeju3D = lazy(() => import('../components/Jeju3D'))
-
-const COMPARE = [
-  ['장소 검색 중심', '휴식 목적 중심'],
-  ['개별 관광지 추천', '연결된 웰니스 코스'],
-  ['인기·평점 중심', '개인의 선호와 상황 반영'],
-  ['정보 나열', '추천 이유 설명'],
-]
-
 const FLOW = [
-  { icon: 'sliders', title: '휴식 선호 입력', text: '목적·동행·위치·시간·실내외 선호' },
-  { icon: 'cloud-sun', title: '공공데이터 조회', text: '날씨·대기질·관광·문화 데이터를 에이전트가 직접 확인' },
-  { icon: 'stars', title: 'AI 코스 구성', text: '장소와 순서, 그리고 추천 이유까지' },
-  { icon: 'bookmark-heart', title: '확인 · 저장', text: '근거를 보고 Supabase에 저장' },
+ ['01', '나의 쉼을 고르고', '휴식 목적과 동행, 머무를 시간을 알려 주세요.'],
+ ['02', '오늘의 제주를 확인해', '날씨·대기질과 관광·문화 데이터를 함께 살핍니다.'],
+ ['03', '하나의 경험으로', '방문 순서와 추천 이유를 읽고, 코스를 저장하세요.'],
 ]
-
-// 홈 = 기획 의도 + 3D 히어로 + "동작 체크" 대시보드
 export default function Home() {
-  const isPhone = typeof window !== "undefined" && window.innerWidth < 768   // 모바일은 3D 영역을 줄여 제목이 바로 보이게
-  const [db, setDb] = useState(isSupabaseReady
-    ? { state: 'wait', msg: '확인 중...' }
-    : { state: 'warn', msg: '.env.local 미설정 — 코스는 이 브라우저에만 저장돼요' })
-  const [api, setApi] = useState({ state: 'wait', msg: '확인 중...' })
-
-  useEffect(() => {
-    if (isSupabaseReady) ensureUser()
-      .then(() => supabase.from('courses').select('id').limit(1))
-      .then(({ error }) => setDb(error ? { state: 'fail', msg: error.message } : { state: 'ok', msg: '연결 OK (익명 사용자 · RLS)' }))
-      .catch((e) => setDb({ state: 'fail', msg: e.message }))
-
-    ping()
-      .then((d) => setApi({
-        state: d.hasDataKey && d.hasClaudeKey ? 'ok' : 'warn',
-        msg: `서버 함수 OK · 공공데이터 키 ${d.hasDataKey ? '있음' : '없음'} · Claude 키 ${d.hasClaudeKey ? '있음' : '없음'}`,
-      }))
-      .catch(() => setApi({ state: 'fail', msg: '/api 응답 없음 — npm run dev 또는 vercel dev 로 실행했는지 확인' }))
-  }, [])
-
-  return (
-    <>
-      <section className="hero rounded-4 mb-4">
-        <Suspense fallback={<Loading text="3D 제주를 그리는 중…" />}><Jeju3D height={isPhone ? 240 : 440} focusX={isPhone ? 0 : -4.5} /></Suspense>
-        <div className="hero-text">
-          <div className="eyebrow">Wellness Expertise × Jeju Open Data × AI Agent</div>
-          <h1 className="fw-bold">JEJU WELLNESS<br />CONCIERGE</h1>
-          <p className="lead mb-3">“지금 나에게 어떤 휴식이 필요한가?”<br />웰니스 전문가의 판단 기준으로, 오늘의 제주 데이터에 맞는 휴식 코스를 설계합니다.</p>
-          <Button as={Link} to="/concierge" size="lg" variant="primary"><i className="bi bi-stars me-2" />내 휴식 코스 만들기</Button>
-          <div className="mt-3"><ConditionsBar place="제주시" /></div>
-        </div>
-      </section>
-
-      <Row xs={1} md={2} lg={4} className="g-3 mb-4">
-        {FLOW.map((f, i) => (
-          <Col key={f.title}>
-            <Card className="h-100 feature-card"><Card.Body>
-              <i className={`bi bi-${f.icon} fs-2 text-primary`} />
-              <div className="fw-bold mt-2">{i + 1}. {f.title}</div>
-              <div className="small text-muted">{f.text}</div>
-            </Card.Body></Card>
-          </Col>
-        ))}
-      </Row>
-
-      <MoodGallery topic="jeju" />
-
-      <Card className="mb-4"><Card.Body>
-        <h5 className="fw-bold mb-3">일반 추천과 무엇이 다른가요?</h5>
-        {COMPARE.map(([a, b]) => (
-          <Row key={a} className="py-2 border-top align-items-center">
-            <Col xs={5} className="text-muted text-decoration-line-through">{a}</Col>
-            <Col xs={2} className="text-center text-primary"><i className="bi bi-arrow-right" /></Col>
-            <Col xs={5} className="fw-bold">{b}</Col>
-          </Row>
-        ))}
-      </Card.Body></Card>
-
-      <h5 className="fw-bold mb-3"><i className="bi bi-clipboard-check me-2" />동작 체크</h5>
-      <Row xs={1} md={3} className="g-3">
-        <Col><Check title="React · 라우터" state="ok" msg="이 화면이 보이면 OK" /></Col>
-        <Col><Check title="Supabase" {...db} /></Col>
-        <Col><Check title="서버 함수 /api" {...api} /></Col>
-      </Row>
-    </>
-  )
-}
-
-function Check({ title, state, msg }) {
-  const icon = {
-    ok: 'check-circle-fill text-success', warn: 'exclamation-circle-fill text-warning',
-    fail: 'x-circle-fill text-danger', wait: 'hourglass-split text-muted',
-  }[state]
-  return (
-    <Card className="h-100"><Card.Body>
-      <div className="fw-bold mb-1"><i className={`bi bi-${icon} me-2`} />{title}</div>
-      <div className="small text-muted">{msg}</div>
-    </Card.Body></Card>
-  )
+ const [show3D,setShow3D]=useState(false)
+ return <>
+  <section className="home-hero">
+   <div className="home-hero-copy">
+    <div className="eyebrow">WELLNESS EXPERTISE × JEJU OPEN DATA</div>
+    <h1>지금 나에게<br />필요한 쉼, <em>제주에서.</em></h1>
+    <p className="hero-description">어디를 갈지보다, 어떤 쉼이 필요한지 먼저.<br />나의 선호와 오늘의 제주 데이터를 바탕으로<br className="d-none d-lg-block" /> 휴식의 흐름을 함께 설계합니다.</p>
+    <div className="d-flex gap-2 flex-wrap"><Button as={Link} to="/concierge" size="lg">나의 휴식 코스 만들기 <i className="bi bi-arrow-up-right ms-2" /></Button><Button as={Link} to="/places" size="lg" variant="outline-primary">장소 둘러보기</Button></div>
+    <p className="hero-footnote">회원가입 없이 시작하고, 마음에 드는 코스를 저장하세요.</p>
+   </div>
+   <div className="home-hero-art"><div className="map-caption"><span className="live-dot" />제주를 느긋하게 바라보는 시간</div><div className="hero-visual">{show3D?<Suspense fallback={<div className="scene-loading">제주의 풍경을 준비하고 있어요.</div>}><Jeju3D height={430} focusX={0}/></Suspense>:<img src={PHOTOS[1].large} alt={PHOTOS[1].tags} width="640" height="430"/>}</div><div className="hero-visual-controls"><button type="button" onClick={()=>setShow3D(!show3D)} aria-pressed={show3D}>{show3D?'사진으로 보기':'3D 제주 둘러보기'} <i className="bi bi-arrow-up-right"/></button><a href={PHOTOS[1].page} target="_blank" rel="noopener noreferrer">분위기 참고 · {PHOTOS[1].user} / Pixabay</a></div></div>
+  </section>
+  <div className="conditions-strip"><span className="strip-label">오늘의 제주</span><ConditionsBar place="제주시" /></div>
+  <section className="section-block"><div className="section-heading"><div><div className="eyebrow">FROM INFORMATION TO EXPERIENCE</div><h2>나의 속도로 만나는 제주</h2></div><p>장소의 목록에, 휴식의 이유를 더합니다.</p></div><Row xs={1} md={3} className="g-3">{FLOW.map(([n,title,description])=><Col key={n}><Card className="h-100 feature-card"><Card.Body><span className="step-index">{n}</span><h3>{title}</h3><p className="mb-0 text-muted">{description}</p></Card.Body></Card></Col>)}</Row></section>
+  <section className="section-block"><MoodGallery topic="jeju" /></section>
+  <section className="principles-section"><div><div className="eyebrow">OUR CURATION PRINCIPLES</div><h2>추천의 이유를<br />알 수 있는 여행.</h2></div><div><p>휴식 목적, 환경 적합성, 이동 부담, 경험의 흐름, 정보의 신뢰성. 다섯 가지 기준으로 나에게 맞는 후보를 제안합니다.</p><p className="small mb-0">추천에 사용한 도구와 조회 시점을 확인할 수 있습니다. 운영시간과 현장 이용 가능 여부는 방문 전 공식 정보를 확인해 주세요.</p></div></section>
+ </>
 }
