@@ -13,7 +13,7 @@
 ![Claude](https://img.shields.io/badge/Claude-Agent-D97757)
 ![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)
 
-**[🌐 배포 주소](https://jeju-wellness-concierge-seven.vercel.app)** · **[📦 GitHub](https://github.com/jeongeunlee0/jeju-wellness-concierge)**
+**[🌐 배포 주소](https://jeju-wellness-concierge-seven.vercel.app)** · **[📦 GitHub](https://github.com/jeongeunlee0/jeju-wellness-concierge)** · **[🎤 발표자료](docs/index.html)** (브라우저에서 열고 ← → 로 넘기기, N: 발표 노트, P: PDF 인쇄)
 
 </div>
 
