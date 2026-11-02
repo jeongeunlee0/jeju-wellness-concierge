@@ -33,7 +33,7 @@ export default function Heritage() {
       {loading ? <Loading /> : list.length === 0 ? <Empty /> : (
         <Row xs={1} sm={2} lg={3} className="g-3">
           {list.map((h, i) => (
-            <Col key={i}><ItemCard title={h.name} subtitle={h.city} badge={h.kind} /></Col>
+            <Col key={i}><ItemCard title={h.name} subtitle={h.city} badge={h.kind} fallbackTopic="heritage" index={i} /></Col>
           ))}
         </Row>
       )}

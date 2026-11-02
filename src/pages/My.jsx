@@ -28,7 +28,7 @@ export default function My() {
                 </div>
               </Accordion.Header>
               <Accordion.Body>
-                <CourseResult result={{ course: c.course, steps: [] }} showMap={false} />
+                <CourseResult result={{ course: c.course, steps: [] }} showMap={false} purpose={c.preferences?.purpose} />
                 <Button variant="outline-danger" size="sm" className="mt-3" onClick={() => deleteCourse(c.id)}><i className="bi bi-trash me-1" />삭제</Button>
               </Accordion.Body>
             </Accordion.Item>

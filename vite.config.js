@@ -22,6 +22,7 @@ function localApi(env) {
           }
           const vres = {
             status(code) { res.statusCode = code; return vres },
+            setHeader(k, v) { res.setHeader(k, v); return vres },
             json(data) { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(data)) },
           }
           await mod.default({ method: req.method, query: Object.fromEntries(url.searchParams), body, headers: req.headers, socket: req.socket }, vres)

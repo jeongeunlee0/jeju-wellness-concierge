@@ -35,3 +35,6 @@ export const fetchAir = (place = '제주시') =>
 
 // AI 컨시어지: 선호 입력 → 웰니스 코스
 export const planCourse = (preferences) => post('/api/agent', { preferences })
+
+// Pixabay 분위기 참고 이미지 (주제: jeju·oreum·forest·sea·sunset·spa·tea·heritage)
+export const fetchImages = (topic = 'jeju', count = 6) => get(`/api/images?topic=${topic}&count=${count}`)

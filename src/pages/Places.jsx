@@ -6,6 +6,7 @@ import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { fetchPlaces } from '../api/client'
 
 const TYPES = { 12: '관광지', 14: '문화시설', 15: '축제·행사', 39: '음식점' }
+const FALLBACK = { 12: 'forest', 14: 'heritage', 15: 'jeju', 39: 'tea' }
 const QUICK = ['스파', '온천', '숲', '해변', '산책', '카페', '명상', '오름']
 
 export default function Places() {
@@ -42,9 +43,9 @@ export default function Places() {
       <ErrorAlert error={error} />
       {loading ? <Loading /> : places.length === 0 ? <Empty /> : (
         <Row xs={1} sm={2} lg={3} className="g-3">
-          {places.map((p) => (
+          {places.map((p, i) => (
             <Col key={p.id}>
-              <ItemCard title={p.title} subtitle={p.addr} image={p.image} badge={TYPES[p.type]} />
+              <ItemCard title={p.title} subtitle={p.addr} image={p.image} badge={TYPES[p.type]} fallbackTopic={FALLBACK[p.type] ?? 'jeju'} index={i} />
             </Col>
           ))}
         </Row>

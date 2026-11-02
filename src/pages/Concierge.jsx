@@ -70,7 +70,7 @@ export default function Concierge() {
 
         <Col lg={7}>
           {result
-            ? <CourseResult result={result} onSave={saveCourse} />
+            ? <CourseResult result={result} onSave={saveCourse} purpose={prefs.purpose} />
             : (
               <Card className="h-100 empty-state"><Card.Body className="d-flex flex-column align-items-center justify-content-center text-center text-muted py-5">
                 <i className="bi bi-flower2 display-4 mb-3" />

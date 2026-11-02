@@ -34,7 +34,7 @@ export default function RootLayout() {
 
       <footer className="py-3 border-top">
         <Container className="small text-muted">
-          제주대 청년도약 부트캠프 1기 · 데이터 출처: 기상청·한국관광공사·국가유산청·Open-Meteo · 휴식 선호에 맞춘 제안이며 의료적 조언이 아닙니다
+          제주대 청년도약 부트캠프 1기 · 데이터 출처: 기상청·한국관광공사·국가유산청·Open-Meteo · 사진: <a href="https://pixabay.com" target="_blank" rel="noopener noreferrer">Pixabay</a> · 관광정보: <a href="https://www.visitjeju.net/kr" target="_blank" rel="noopener noreferrer">비짓제주</a> · 휴식 선호에 맞춘 제안이며 의료적 조언이 아닙니다
         </Container>
       </footer>
 

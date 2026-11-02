@@ -5,6 +5,7 @@ import { ping } from '../api/client'
 import { ensureUser, isSupabaseReady, supabase } from '../lib/supabase'
 import ConditionsBar from '../components/ConditionsBar'
 import { Loading } from '../components/Status'
+import MoodGallery from '../components/MoodGallery'
 
 const Jeju3D = lazy(() => import('../components/Jeju3D'))
 
@@ -24,6 +25,7 @@ const FLOW = [
 
 // 홈 = 기획 의도 + 3D 히어로 + "동작 체크" 대시보드
 export default function Home() {
+  const isPhone = typeof window !== "undefined" && window.innerWidth < 768   // 모바일은 3D 영역을 줄여 제목이 바로 보이게
   const [db, setDb] = useState(isSupabaseReady
     ? { state: 'wait', msg: '확인 중...' }
     : { state: 'warn', msg: '.env.local 미설정 — 코스는 이 브라우저에만 저장돼요' })
@@ -46,7 +48,7 @@ export default function Home() {
   return (
     <>
       <section className="hero rounded-4 mb-4">
-        <Suspense fallback={<Loading text="3D 제주를 그리는 중…" />}><Jeju3D height={440} focusX={-4.5} /></Suspense>
+        <Suspense fallback={<Loading text="3D 제주를 그리는 중…" />}><Jeju3D height={isPhone ? 240 : 440} focusX={isPhone ? 0 : -4.5} /></Suspense>
         <div className="hero-text">
           <div className="eyebrow">Wellness Expertise × Jeju Open Data × AI Agent</div>
           <h1 className="fw-bold">JEJU WELLNESS<br />CONCIERGE</h1>
@@ -67,6 +69,8 @@ export default function Home() {
           </Col>
         ))}
       </Row>
+
+      <MoodGallery topic="jeju" />
 
       <Card className="mb-4"><Card.Body>
         <h5 className="fw-bold mb-3">일반 추천과 무엇이 다른가요?</h5>
