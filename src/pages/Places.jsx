@@ -4,12 +4,16 @@ import PageHeader from '../components/PageHeader'
 import ItemCard from '../components/ItemCard'
 import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { fetchPlaces } from '../api/client'
+import { useAppStore } from '../store/useAppStore'
+import Icon from '../components/Icon'
 
 const TYPES = { 12: '관광지', 14: '문화시설', 15: '축제·행사', 39: '음식점' }
 const FALLBACK = { 12: 'forest', 14: 'heritage', 15: 'jeju', 39: 'tea' }
 const QUICK = ['스파', '온천', '숲', '해변', '산책', '카페', '명상', '오름']
 
 export default function Places() {
+  const addToCart = useAppStore((s) => s.addToCart)
+  const cart = useAppStore((s) => s.cart)
   const [keyword, setKeyword] = useState('숲')
   const [type, setType] = useState('12')
   const [places, setPlaces] = useState([])
@@ -27,14 +31,14 @@ export default function Places() {
 
   return (
     <>
-      <PageHeader icon="tree" title="웰니스 장소" subtitle="한국관광공사 TourAPI — 휴식 키워드로 제주의 장소를 직접 찾아보세요" />
+      <PageHeader icon="leaf" title="웰니스 장소" subtitle="한국관광공사 TourAPI — 휴식 키워드로 제주의 장소를 직접 찾아보세요" />
       <Form onSubmit={search} className="mb-2">
         <InputGroup>
           <Form.Select value={type} onChange={(e) => setType(e.target.value)} style={{ maxWidth: 140 }}>
             {Object.entries(TYPES).map(([v, label]) => <option key={v} value={v}>{label}</option>)}
           </Form.Select>
           <Form.Control value={keyword} onChange={(e) => setKeyword(e.target.value)} placeholder="예: 스파, 숲, 해변" />
-          <Button type="submit"><i className="bi bi-search" /></Button>
+          <Button type="submit" aria-label="검색"><Icon name="arrow" size={18} /></Button>
         </InputGroup>
       </Form>
       <div className="d-flex flex-wrap gap-2 mb-4">
@@ -45,7 +49,9 @@ export default function Places() {
         <Row xs={1} sm={2} lg={3} className="g-3">
           {places.map((p, i) => (
             <Col key={p.id}>
-              <ItemCard title={p.title} subtitle={p.addr} image={p.image} badge={TYPES[p.type]} fallbackTopic={FALLBACK[p.type] ?? 'jeju'} index={i} />
+              <ItemCard title={p.title} subtitle={p.addr} image={p.image} badge={TYPES[p.type]} fallbackTopic={FALLBACK[p.type] ?? 'jeju'} index={i}
+                onAddCart={() => addToCart({ name: p.title, source: 'tour', addr: p.addr, lat: p.lat, lng: p.lng, minutes: p.type === '39' ? 60 : 70 })}
+                inCart={cart.some((c) => c.source === 'tour' && c.name === p.title)} />
             </Col>
           ))}
         </Row>

@@ -1,6 +1,6 @@
 // verification-live.json → VERIFICATION_REPORT.md (실제 검증 결과만 기록)
 //   node scripts/make-report.mjs
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 
 const v = JSON.parse(readFileSync('verification-live.json', 'utf8'))
 const groups = [...new Set(v.results.map((r) => r.group))]
@@ -21,6 +21,9 @@ for (const g of groups) {
   for (const r of v.results.filter((x) => x.group === g)) md += `| ${r.ok ? '✅' : '❌'} | ${r.name} | ${(r.detail || '').replace(/\|/g, '\\|')} |\n`
   md += '\n'
 }
+
+// 자동 검증으로 설명되지 않는 사정(예: 외부 서비스 장애)은 verification-notes.md 에 적어 두면 그대로 붙습니다
+if (existsSync('verification-notes.md')) md += readFileSync('verification-notes.md', 'utf8') + '\n'
 
 md += `## 검증 방법과 한계
 

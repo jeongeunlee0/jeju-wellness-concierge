@@ -4,7 +4,7 @@ body { font-family: 'Pretendard', system-ui, sans-serif; background: #f6fbfa; }
 
 .app-nav { background: rgba(255, 255, 255, .85); backdrop-filter: blur(8px); border-bottom: 1px solid #e3efed; }
 
-.hero { position: relative; overflow: hidden; background: #e9f6f4; min-height: 440px; }
+.hero { position: relative; overflow: hidden; background: #e9f6f4; min-height: 540px; }
 .hero-text {
   position: absolute; left: 0; top: 0; bottom: 0; padding: 2.5rem; max-width: 560px;
   display: flex; flex-direction: column; justify-content: center; pointer-events: none;

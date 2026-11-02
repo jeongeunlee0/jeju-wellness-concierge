@@ -9,6 +9,7 @@ import { RouterProvider } from 'react-router-dom'
 import 'bootswatch/dist/zephyr/bootstrap.min.css'
 import 'bootstrap-icons/font/bootstrap-icons.css'
 import './styles/theme.css'
+import './styles/glass.css'
 
 import { router } from './router'
 

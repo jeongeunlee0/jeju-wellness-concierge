@@ -156,6 +156,10 @@ export default async function handler(req, res) {
   } catch (e) {
     // 429 = Claude 호출 한도 초과. 그 밖의 내부 오류 문구는 로그에만 남기고 화면에는 일반 메시지를 보낸다
     console.error('agent error', e.status, e.message);
+    // AI 계정의 크레딧 소진·키 오류는 사용자에게 "일시적으로 쓸 수 없음"으로 알리고, 나머지 기능은 계속 쓸 수 있다고 안내한다 (내부 결제 정보는 노출하지 않음)
+    if (/credit balance|authentication|invalid x-api-key|permission/i.test(e.message ?? '')) {
+      return res.status(503).json({ error: '지금은 AI 컨시어지를 잠시 사용할 수 없어요. 장소 둘러보기·장바구니·저장한 코스는 그대로 쓸 수 있어요.' });
+    }
     res.status(e.status === 429 ? 429 : 500).json({ error: e.status === 429 ? '사용량이 많아요. 1분 뒤 다시 시도하세요.' : '코스를 만들지 못했어요. 잠시 뒤 다시 시도해 주세요.' });
   }
 }

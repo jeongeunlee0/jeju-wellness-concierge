@@ -31,3 +31,27 @@ create policy "courses insert own" on public.courses for insert to authenticated
 create policy "courses delete own" on public.courses for delete to authenticated using ((select auth.uid()) = user_id);
 
 create index if not exists courses_user_created_idx on public.courses (user_id, created_at desc);
+
+-- ── 장바구니: 마음에 드는 장소를 담아 두는 곳 (예약·결제 없음) ──
+create table if not exists public.wellness_cart (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text not null check (char_length(name) between 1 and 120),
+  source text not null check (source in ('tour', 'heritage', 'course')),
+  addr text,
+  lat double precision,
+  lng double precision,
+  minutes int not null default 60 check (minutes between 10 and 480),
+  created_at timestamptz not null default now(),
+  unique (user_id, source, name)
+);
+alter table public.wellness_cart enable row level security;
+revoke all on public.wellness_cart from anon;
+grant select, insert, delete on public.wellness_cart to authenticated;
+drop policy if exists "wellness_cart select own" on public.wellness_cart;
+drop policy if exists "wellness_cart insert own" on public.wellness_cart;
+drop policy if exists "wellness_cart delete own" on public.wellness_cart;
+create policy "wellness_cart select own" on public.wellness_cart for select to authenticated using ((select auth.uid()) = user_id);
+create policy "wellness_cart insert own" on public.wellness_cart for insert to authenticated with check ((select auth.uid()) = user_id);
+create policy "wellness_cart delete own" on public.wellness_cart for delete to authenticated using ((select auth.uid()) = user_id);
+create index if not exists wellness_cart_user_idx on public.wellness_cart (user_id, created_at desc);

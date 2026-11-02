@@ -4,6 +4,8 @@ import { Loading } from './Status'
 import { PixabayCredit, VisitJejuLink } from './Credits'
 import { useImages } from '../lib/useImages'
 import PixImg from './PixImg'
+import Icon from './Icon'
+import { useAppStore } from '../store/useAppStore'
 
 const Jeju3D = lazy(() => import('./Jeju3D'))
 
@@ -30,6 +32,8 @@ const mapUrl = (s) => `https://www.google.com/maps/search/?api=1&query=${s.lat},
 // 에이전트가 만든 코스: 분위기 사진 + 3D 동선 + 단계별 추천 이유 + 근거(호출한 도구·조회 시점)
 export default function CourseResult({ result, onSave, showMap = true, purpose }) {
   const [copied, setCopied] = useState(false)
+  const addToCart = useAppStore((st) => st.addToCart)
+  const cart = useAppStore((st) => st.cart)
   const { course, steps = [], generatedAt, raw } = result
   if (!course) return <Alert variant="warning">{raw ?? '코스를 만들지 못했어요. 다시 시도해 주세요.'}</Alert>
   const total = course.stops.reduce((a, s) => a + (Number(s.minutes) || 0), 0)
@@ -41,7 +45,7 @@ export default function CourseResult({ result, onSave, showMap = true, purpose }
 
   return (
     <div className="d-flex flex-column gap-3">
-      <Card className="course-summary overflow-hidden">
+      <Card className="course-summary glass overflow-hidden">
         {purpose && <MoodHeader purpose={purpose} />}
         <Card.Body>
           <div className="small text-uppercase text-muted mb-1">추천 코스 · 약 {total}분 · {course.stops.length}곳</div>
@@ -74,8 +78,12 @@ export default function CourseResult({ result, onSave, showMap = true, purpose }
               {s.addr && <div className="small text-muted">{s.addr}</div>}
               <div className="mt-1">{s.reason}</div>
               {s.verified && s.lat && s.lng && (
-                <a className="small" href={mapUrl(s)} target="_blank" rel="noopener noreferrer"><i className="bi bi-geo-alt me-1" />지도에서 보기</a>
+                <a className="small me-3" href={mapUrl(s)} target="_blank" rel="noopener noreferrer"><Icon name="pin" size={14} className="me-1" />지도에서 보기</a>
               )}
+              <button type="button" className="btn btn-sm btn-link p-0 stop-cart" disabled={cart.some((c) => c.name === s.name)}
+                onClick={() => addToCart({ name: s.name, source: 'course', addr: s.addr, lat: s.lat, lng: s.lng, minutes: s.minutes })}>
+                <Icon name={cart.some((c) => c.name === s.name) ? 'check' : 'cart'} size={14} className="me-1" />{cart.some((c) => c.name === s.name) ? '담았어요' : '장바구니 담기'}
+              </button>
             </div>
           </li>
         ))}
@@ -94,8 +102,8 @@ export default function CourseResult({ result, onSave, showMap = true, purpose }
       </div>
 
       <div className="d-flex flex-wrap gap-2">
-        {onSave && <Button variant="primary" onClick={onSave}><i className="bi bi-bookmark-heart me-1" />이 코스 저장하기</Button>}
-        <Button variant="outline-primary" onClick={copy}><i className={`bi bi-${copied ? 'check2' : 'clipboard'} me-1`} />{copied ? '복사했어요' : '코스 복사'}</Button>
+        {onSave && <Button variant="primary" onClick={onSave}><Icon name="bookmark" size={18} className="me-1" />이 코스 저장하기</Button>}
+        <Button variant="outline-primary" onClick={copy}><Icon name={copied ? 'check' : 'copy'} size={18} className="me-1" />{copied ? '복사했어요' : '코스 복사'}</Button>
         <VisitJejuLink>비짓제주 공식 정보</VisitJejuLink>
       </div>
     </div>

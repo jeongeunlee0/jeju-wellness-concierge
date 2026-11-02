@@ -5,6 +5,7 @@ import { ping } from '../api/client'
 import { ensureUser, isSupabaseReady, supabase } from '../lib/supabase'
 import ConditionsBar from '../components/ConditionsBar'
 import { Loading } from '../components/Status'
+import Icon from '../components/Icon'
 import MoodGallery from '../components/MoodGallery'
 
 const Jeju3D = lazy(() => import('../components/Jeju3D'))
@@ -18,9 +19,9 @@ const COMPARE = [
 
 const FLOW = [
   { icon: 'sliders', title: '휴식 선호 입력', text: '목적·동행·위치·시간·실내외 선호' },
-  { icon: 'cloud-sun', title: '공공데이터 조회', text: '날씨·대기질·관광·문화 데이터를 에이전트가 직접 확인' },
-  { icon: 'stars', title: 'AI 코스 구성', text: '장소와 순서, 그리고 추천 이유까지' },
-  { icon: 'bookmark-heart', title: '확인 · 저장', text: '근거를 보고 Supabase에 저장' },
+  { icon: 'cloud', title: '공공데이터 조회', text: '날씨·대기질·관광·문화 데이터를 에이전트가 직접 확인' },
+  { icon: 'spark', title: 'AI 코스 구성', text: '장소와 순서, 그리고 추천 이유까지' },
+  { icon: 'bookmark', title: '확인 · 저장', text: '근거를 보고 Supabase에 저장' },
 ]
 
 // 홈 = 기획 의도 + 3D 히어로 + "동작 체크" 대시보드
@@ -48,12 +49,12 @@ export default function Home() {
   return (
     <>
       <section className="hero rounded-4 mb-4">
-        <Suspense fallback={<Loading text="3D 제주를 그리는 중…" />}><Jeju3D height={isPhone ? 240 : 440} focusX={isPhone ? 0 : -4.5} /></Suspense>
-        <div className="hero-text">
+        <Suspense fallback={<Loading text="3D 제주를 그리는 중…" />}><Jeju3D height={isPhone ? 240 : 540} focusX={isPhone ? 0 : -4.5} /></Suspense>
+        <div className="hero-text glass">
           <div className="eyebrow">Wellness Expertise × Jeju Open Data × AI Agent</div>
           <h1 className="fw-bold">JEJU WELLNESS<br />CONCIERGE</h1>
           <p className="lead mb-3">“지금 나에게 어떤 휴식이 필요한가?”<br />웰니스 전문가의 판단 기준으로, 오늘의 제주 데이터에 맞는 휴식 코스를 설계합니다.</p>
-          <Button as={Link} to="/concierge" size="lg" variant="primary"><i className="bi bi-stars me-2" />내 휴식 코스 만들기</Button>
+          <Button as={Link} to="/concierge" size="lg" variant="primary"><Icon name="spark" size={20} className="me-2" />내 휴식 코스 만들기</Button>
           <div className="mt-3"><ConditionsBar place="제주시" /></div>
         </div>
       </section>
@@ -62,7 +63,7 @@ export default function Home() {
         {FLOW.map((f, i) => (
           <Col key={f.title}>
             <Card className="h-100 feature-card"><Card.Body>
-              <i className={`bi bi-${f.icon} fs-2 text-primary`} />
+              <span className="feature-icon"><Icon name={f.icon} size={26} /></span>
               <div className="fw-bold mt-2">{i + 1}. {f.title}</div>
               <div className="small text-muted">{f.text}</div>
             </Card.Body></Card>
@@ -77,13 +78,13 @@ export default function Home() {
         {COMPARE.map(([a, b]) => (
           <Row key={a} className="py-2 border-top align-items-center">
             <Col xs={5} className="text-muted text-decoration-line-through">{a}</Col>
-            <Col xs={2} className="text-center text-primary"><i className="bi bi-arrow-right" /></Col>
+            <Col xs={2} className="text-center text-primary"><Icon name="arrow" size={20} /></Col>
             <Col xs={5} className="fw-bold">{b}</Col>
           </Row>
         ))}
       </Card.Body></Card>
 
-      <h5 className="fw-bold mb-3"><i className="bi bi-clipboard-check me-2" />동작 체크</h5>
+      <h5 className="fw-bold mb-3"><Icon name="shield" size={20} className="me-2" />동작 체크</h5>
       <Row xs={1} md={3} className="g-3">
         <Col><Check title="React · 라우터" state="ok" msg="이 화면이 보이면 OK" /></Col>
         <Col><Check title="Supabase" {...db} /></Col>

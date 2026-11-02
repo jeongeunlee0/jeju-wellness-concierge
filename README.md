@@ -57,6 +57,10 @@ flowchart LR
 | 🌤 **오늘의 컨디션** | 기상청 날씨 + 미세먼지·자외선을 한 줄로 |
 | 📷 **분위기 사진** | Pixabay API 로 휴식 목적별 사진을 코스 상단·홈 갤러리·사진 없는 카드에 표시 (**예시 이미지**임을 명시) |
 | 🧭 **지도 · 복사 · 공식정보** | 검증된 장소의 지도 링크, 코스 텍스트 복사, 비짓제주 공식 관광정보 링크 |
+| 🛒 **장바구니** | 장소 카드·AI 코스의 장소를 담아 합계 시간을 이용 시간과 비교하고, 담은 장소로 AI 코스를 다시 요청 (예약·결제 없음). Supabase `wellness_cart` + RLS, 설정이 없으면 localStorage |
+| 🔐 **간단한 로그인** | 이메일 + 비밀번호. 로그인 없이도 익명 계정으로 쓸 수 있고, 가입하면 **쓰던 계정에 이메일이 연결**돼 코스·장바구니가 그대로 이어짐 |
+| 🪟 **리퀴드 글래스 디자인** | 유리 질감의 내비·카드·하단 탭·토스트, 마우스를 따라 움직이는 빛 하이라이트, Chromium 에서는 배경 굴절. 라이브러리 없이 CSS + 작은 스크립트(`src/lib/liquidGlass.js`)로 구현, 지원/모션/투명도 설정에 따라 단계적으로 대체 |
+| 🎨 **직접 그린 아이콘·로고** | `src/components/Icon.jsx`(24px 격자 SVG 아이콘 세트), `Logo.jsx`, `public/favicon.svg` |
 
 ### 추천 판단 기준
 
@@ -78,6 +82,12 @@ flowchart LR
 | 한국관광공사 TourAPI (`KorService2`) | 스파·숲·해변·카페 등 웰니스 장소 검색 | 공공데이터포털 |
 | 국가유산청 국가유산 검색 | 조용히 거닐며 문화를 느끼는 코스 재료 | 불필요 |
 | Open-Meteo 대기질 | 미세먼지(PM10/PM2.5)·자외선 지수 → 야외 활동 판단 | 불필요 |
+
+### 기술 선택에 대한 메모
+
+- **Next.js 는 쓰지 않았습니다.** 과제 필수 조건이 "React(Vite) + Router + Store"이고, 이미 검증을 통과한 구조를 제출 직전에 갈아엎으면 오류 위험이 커서 Vite + React Router 를 유지했습니다. 서버 로직은 Vercel `api/` 함수로 같은 역할을 합니다.
+- **Three.js** 는 `src/components/Jeju3D.jsx` 에서 제주 지형·구름·코스 동선을 그립니다(외부 3D 모델 없이 코드로 생성).
+- **리퀴드 글래스** 는 별도 npm 패키지를 쓰지 않고 직접 구현했습니다(공급망 위험 없음).
 
 ### 그 밖의 외부 연동
 
@@ -132,9 +142,10 @@ npm run dev                    # http://localhost:5173  (화면 + /api 함께 �
 | `ANTHROPIC_MODEL` | (선택) 모델 ID, 기본 `claude-sonnet-5-5` |
 
 1. Supabase 대시보드 → Authentication → Sign In / Providers 에서 **Allow anonymous sign-ins** 켜기
-2. Supabase SQL Editor 에서 [`supabase/schema.sql`](supabase/schema.sql) 실행 (여러 번 실행해도 안전)
-3. 홈 화면 **동작 체크** 카드가 모두 초록이 되는지 확인
-4. 키가 없어도 홈·국가유산·대기질·3D는 동작하고, Supabase 설정이 없으면 코스는 브라우저(localStorage)에 임시 저장됩니다
+2. Supabase SQL Editor 에서 [`supabase/schema.sql`](supabase/schema.sql) 실행 (여러 번 실행해도 안전) — `courses`, `wellness_cart` 테이블과 RLS 가 만들어집니다. 같은 프로젝트에 다른 과제의 `cart_items` 테이블이 있어도 건드리지 않도록 장바구니 테이블 이름을 `wellness_cart` 로 분리했습니다.
+3. (선택) Authentication → Sign In / Providers 에서 "Confirm email" 을 켜면 가입 시 메일 인증을 요구합니다. 앱은 두 경우 모두 처리합니다.
+4. 홈 화면 **동작 체크** 카드가 모두 초록이 되는지 확인
+5. 키가 없어도 홈·국가유산·대기질·3D는 동작하고, Supabase 설정이 없으면 코스는 브라우저(localStorage)에 임시 저장됩니다
 
 ## ☁️ 배포 (Vercel)
 
@@ -152,7 +163,10 @@ npm run dev                    # http://localhost:5173  (화면 + /api 함께 �
 
 ## 🧪 검증
 
-배포본을 대상으로 한 자동 검증 결과: **40/40 통과** (2026-11-02) — 상세는 [VERIFICATION_REPORT.md](VERIFICATION_REPORT.md)
+배포본을 대상으로 한 자동 검증 결과 (2026-11-02) — 상세는 [VERIFICATION_REPORT.md](VERIFICATION_REPORT.md)
+
+- 장바구니·로그인 기능 추가 전 전체 실행: **40/40 통과**
+- 추가 후 실행: **36/39 통과.** 실패 3건은 앱 결함이 아니라 **Anthropic 계정 크레딧 소진**(`credit balance is too low`)으로 에이전트 호출 자체가 거절된 것입니다. 시나리오 D(장바구니 장소 요청)는 아직 한 번도 통과를 확인하지 못했습니다. 크레딧 충전 후 같은 명령으로 다시 검증해야 합니다.
 
 ```bash
 node scripts/verify-live.mjs https://jeju-wellness-concierge-seven.vercel.app   # --no-agent: Claude 호출 생략
@@ -164,10 +178,12 @@ node scripts/make-report.mjs                                                    
 | 환경변수 | 서버 함수가 `DATA_GO_KR_KEY` · `ANTHROPIC_API_KEY` · `PIXABAY_API_KEY` 를 갖고 있고 Supabase 공개 설정이 있음 |
 | 외부 연동 | 기상청 · TourAPI · 국가유산청 · Open-Meteo · Pixabay 실제 응답, 허용 주제 밖 이미지 요청 400 |
 | Supabase | 익명 로그인 · 본인 저장·조회 · 로그인 없는 읽기 401 · 타인 코스 조회·삭제 불가 · id 위조 403 |
+| 장바구니 | 담기·본인 조회·삭제, 중복 409, 허용되지 않은 값 400, 로그인 없는 읽기 401, 타인 장바구니 조회·삭제 불가 |
+| 로그인 | 잘못된 계정은 400 `invalid_credentials` (**가입·로그인 성공 경로는 실제 이메일이 필요해 자동 검증하지 못함**) |
 | 에이전트 입력 | 선택지 밖 값·범위 밖 시간 400 |
 | **환각(할루시네이션)** | 추천 장소를 공공 API 에 **다시 조회**해 실재 대조 · 존재하지 않는 시설("제주 블루문 스파")을 넣도록 유도해도 추천하지 않음 · 영업시간·전화번호를 지어내지 않음 · 치료 효과 단정을 유도해도 거절 |
 
-수동으로 확인한 것: 코스 생성 → 저장 → 새로고침 후 조회(로컬·배포본), 도구 목록·조회 시점 표시, API 키가 없을 때 화면이 멈추지 않고 안내 문구를 보여 줌, 모바일(375px) 가로 넘침 없음.
+수동으로 확인한 것: 장바구니 담기→새로고침 후 유지→빼기→비우기, 로그인 화면의 입력 검증·오류 문구(로컬), 코스 생성 → 저장 → 새로고침 후 조회(로컬·배포본), 도구 목록·조회 시점 표시, API 키가 없을 때 화면이 멈추지 않고 안내 문구를 보여 줌, 모바일(375px) 가로 넘침 없음.
 
 **검증하지 못한 것(한계)**
 - 비가 오거나 미세먼지가 "나쁨"인 날 실내 중심으로 바뀌는지: 검증 시점의 날씨가 맑음·보통이라 확인하지 못했습니다.

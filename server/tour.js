@@ -28,6 +28,6 @@ export async function searchTour({ keyword = '', contentTypeId = '12', rows = 10
   const list = !item ? [] : Array.isArray(item) ? item : [item];
   return list.map((p) => ({
     id: p.contentid, title: p.title, addr: p.addr1,
-    image: p.firstimage, lng: p.mapx, lat: p.mapy, type: p.contenttypeid,
+    image: p.firstimage ? String(p.firstimage).replace(/^http:\/\//, 'https://') : '', lng: p.mapx, lat: p.mapy, type: p.contenttypeid,
   }));
 }

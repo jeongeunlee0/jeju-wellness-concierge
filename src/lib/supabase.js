@@ -21,3 +21,6 @@ export function ensureUser() {
   })().catch((e) => { pending = undefined; throw e })
   return pending
 }
+
+// 로그아웃 등으로 세션이 바뀌면 캐시된 사용자 확인을 비워 새 익명 사용자를 받게 합니다
+export function resetUser() { pending = undefined }

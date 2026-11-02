@@ -14,7 +14,7 @@ export default function Concierge() {
 
   return (
     <>
-      <PageHeader icon="stars" title="AI 웰니스 컨시어지" subtitle="지금 나에게 어떤 휴식이 필요한지 알려 주세요. 오늘의 제주 데이터로 코스를 설계합니다." />
+      <PageHeader icon="spark" title="AI 웰니스 컨시어지" subtitle="지금 나에게 어떤 휴식이 필요한지 알려 주세요. 오늘의 제주 데이터로 코스를 설계합니다." />
       <Row className="g-4">
         <Col lg={5}>
           <Card>
