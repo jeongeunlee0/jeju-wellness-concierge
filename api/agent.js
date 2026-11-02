@@ -136,6 +136,7 @@ export default async function handler(req, res) {
         // 검증: 추천 장소가 도구 결과에 있는지 대조하고, 있으면 좌표를 붙인다
         course = validateCourse(course, known, prefs.hours);
         if (!course) return res.status(502).json({ error: '조회 결과와 일치하는 코스를 완성하지 못했습니다. 조건을 바꿔 다시 시도해 주세요.', steps });
+        course.environment = {weather:steps.find(s=>s.tool==='get_weather'&&!s.error)?.result?.[0]??null,air:steps.find(s=>s.tool==='get_air_quality'&&!s.error)?.result??null};
         return res.status(200).json({ course, steps, generatedAt: new Date().toISOString() });
       }
 
@@ -147,7 +148,7 @@ export default async function handler(req, res) {
         try { if (!Object.hasOwn(runTool, block.name)) throw new Error('지원하지 않는 도구'); result = await runTool[block.name](block.input ?? {}); }
         catch (e) { result = { error: e.message }; }
         if (Array.isArray(result)) {
-          for (const it of result) known.push({ name: it.title ?? it.name, lat: it.lat, lng: it.lng, addr: it.addr ?? it.city, source: block.name === 'search_heritage' ? 'heritage' : 'tour' });
+          for (const it of result) known.push({ name: it.title ?? it.name, lat: it.lat, lng: it.lng, addr: it.addr ?? it.city, id: it.id, type: it.type, source: block.name === 'search_heritage' ? 'heritage' : 'tour' });
         }
         steps.push({ tool: block.name, args: block.input, count: Array.isArray(result) ? result.length : result?.error ? 0 : 1, error: result?.error, result: Array.isArray(result) ? result : result?.error ? undefined : result });
         results.push({ type: 'tool_result', tool_use_id: block.id, content: JSON.stringify(result), is_error: Boolean(result?.error) });

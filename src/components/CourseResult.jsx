@@ -4,6 +4,7 @@ import { Loading } from './Status'
 import { VisitJejuLink } from './Credits'
 import { PHOTOS } from '../lib/photos'
 import PixImg from './PixImg'
+import VisitGuide from './VisitGuide'
 
 const Jeju3D = lazy(() => import('./Jeju3D'))
 
@@ -82,6 +83,7 @@ export default function CourseResult({ result, onSave, showMap = true, purpose }
         ))}
       </ol>
 
+      <VisitGuide result={result}/>
       {course.notes && <Alert variant="light" className="border mb-0 small"><i className="bi bi-info-circle me-1" />{course.notes}</Alert>}
 
       <details className="source-panel small text-muted"><summary>추천에 사용한 데이터와 조회 기록</summary>

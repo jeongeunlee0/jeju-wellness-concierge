@@ -14,7 +14,7 @@ export function validateCourse(value, known, hours) {
     if (!Number.isInteger(minutes) || minutes < 10 || minutes > 240 || typeof stop.reason !== 'string') return null;
     const lat = Number(hit.lat), lng = Number(hit.lng);
     const verified = Number.isFinite(lat) && Number.isFinite(lng) && lat > 33 && lat < 34 && lng > 126 && lng < 127;
-    return { name: hit.name, source: hit.source, minutes, reason: stop.reason.slice(0, 600), verified, lat: verified ? lat : null, lng: verified ? lng : null, addr: hit.addr ?? null };
+    return { id: hit.id ?? null, type: hit.type ?? null, name: hit.name, source: hit.source, minutes, reason: stop.reason.slice(0, 600), verified, lat: verified ? lat : null, lng: verified ? lng : null, addr: hit.addr ?? null };
   });
   if (stops.some(stop => !stop) || stops.reduce((n, stop) => n + stop.minutes, 0) > hours * 60) return null;
   return { summary: value.summary.slice(0, 500), stops, conditions: typeof value.conditions === 'string' ? value.conditions.slice(0, 600) : '', notes: (typeof value.notes === 'string' ? value.notes.slice(0, 600) : '') + ' 체류 시간은 추천값이며 이동시간·영업시간·현장 이용 가능 여부는 별도 확인이 필요합니다.' };
