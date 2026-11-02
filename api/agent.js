@@ -48,7 +48,8 @@ const SYSTEM = `너는 JEJU WELLNESS CONCIERGE의 제주 웰니스 경험 큐레
 - 비/강풍 등이 확인되면 실내 대안을 고려하고, 실내 여부는 검증되지 않았다면 확인 필요라고 표기한다.
 - 감정/스트레스 표현은 취향과 휴식 목적을 파악하는 데만 사용한다. 치료·진단·효과 보장은 하지 않는다.
 - 추천은 2~3개 장소 후보와 각 장소의 추천 이유, 데이터로 확인된 사항, 별도 확인이 필요한 사항으로 구분한다.
-- 답변은 한국어로 간결하게 하되 확인된 자료와 추천 의견을 구별한다.`;
+- 최종 답변은 한국어 600자 이내로 작성한다. 후보 2개에 대해 확인된 사항, 추천 의견, 확인 필요를 짧게 적는다. 호출 기록과 원문 데이터는 별도 화면에서 제공되므로 답변에서 반복하지 않는다.
+- 날씨 도구는 바람·특보 정보를 제공하지 않는다. 바람이 약하거나 경보가 없다고 판단하지 않는다.`;
 
 export function createAgentHandler({ createClient = () => new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, timeout: 20000, maxRetries: 0 }), toolHandlers = runTool, hasKey = () => Boolean(process.env.ANTHROPIC_API_KEY) } = {}) {
 return async function handler(req, res) {

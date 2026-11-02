@@ -1,45 +1,30 @@
 # JEJU WELLNESS CONCIERGE
-제주 공공데이터를 기반으로 휴식 목적에 맞는 장소를 탐색하고 저장하는 React 앱입니다.
+제주 공공데이터와 Claude 도구 호출을 이용해 목적에 맞는 휴식 장소를 탐색·추천·저장하는 React 앱입니다.
 
 ## 실행
-Node.js 22 이상을 사용하세요.
-1. npm ci
-2. .env.example을 .env.local로 복사하고 환경변수를 설정합니다.
-3. npm run dev
-4. http://127.0.0.1:5173 에서 UI와 /api를 함께 확인합니다.
+Node.js 22 이상에서 npm ci 후 .env.example을 .env.local로 복사해 설정합니다.
+- npm run dev: http://127.0.0.1:5173 에서 화면과 서버 API 실행
+- npm run build: 배포용 빌드
+- npm run lint: 코드 검사
+- npm test: 회귀 검사 8개
+- npm run preflight: 핵심 파일·문법·환경변수 설정 여부 확인 (키 값 출력 안 함)
+- node scripts/verify-live.mjs: 실제 외부 API와 DB 연결 검사. TEST_BASE_URL로 배포 URL 지정 가능
 
-npm run build / npm run lint / npm run preflight 로 검증합니다. preflight는 .env.local을 읽고 설정 여부만 출력합니다. 환경변수 미설정은 외부 연동 미완료를 의미합니다.
+## 설정
+VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY는 공개 가능한 브라우저 설정입니다.
+DATA_GO_KR_KEY / ANTHROPIC_API_KEY는 서버 전용 비밀키입니다. VITE_를 붙이지 마세요.
+ANTHROPIC_MODEL 기본값 claude-sonnet-5-5의 실제 호출을 확인했습니다.
+Supabase에서 Anonymous Sign-Ins를 켜고 supabase/schema.sql을 적용합니다. 이 앱은 wellness_favorites 전용 테이블과 사용자별 RLS를 사용합니다.
+.env.local과 .vercel은 GitHub/ZIP에 포함하지 않습니다. 배포 키는 Vercel에 직접 등록합니다.
 
-## 환경변수
-- VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY: 브라우저용 공개 설정
-- DATA_GO_KR_KEY: 서버 전용 공공데이터포털 Decoding 키. TourAPI와 기상청 각각 활용 승인이 필요합니다.
-- ANTHROPIC_API_KEY: 서버 전용 Claude 키
-- ANTHROPIC_MODEL: 계정에서 접근 가능한 모델 ID. v4의 강사 지정 claude-sonnet-5-5를 기본값으로 보존했으나 실제 모델 접근은 미검증입니다.
+## 배포 및 실제 검증
+앱: https://jeju-wellness-concierge.vercel.app
+관광공사 10건·기상청 6개 시간대·국가유산 10건 실제 200 응답을 확인했습니다.
+Claude가 세 도구를 직접 선택·호출하고 실제 결과를 화면에 표시하는 것을 검증했습니다.
+모바일 브라우저에서 관광지 저장 후 새로고침 조회 및 사용자별 DB 접근 차단을 확인했습니다.
+전체 근거와 한계는 VERIFICATION_REPORT.md를 확인하세요. 오래된 verification-*.json은 키 설정 전 과거 결과입니다.
 
-.env.local은 GitHub와 배포 소스에서 제외됩니다. Vercel 환경변수에도 별도 등록해야 합니다. 비밀키에 VITE_ 접두사를 붙이지 마세요.
-
-## 저장
-Supabase Auth의 Anonymous Sign-Ins와 supabase/schema.sql이 필요합니다. wellness_favorites는 auth.uid() 기준 사용자별 RLS를 사용합니다. 게스트 세션은 새로고침 후 유지되지만 브라우저 데이터를 지우거나 다른 기기에서 접속하면 기존 저장함에 접근할 수 없습니다. 이전 v4의 공개 favorites 테이블은 사용하지 않습니다.
-
-## AI
-Claude가 search_tour_places, get_weather, search_heritage 중 필요한 도구를 선택합니다. 도구 이름·입력·성공/실패·건수·결과를 화면에서 펼쳐 볼 수 있습니다. 모델 요청이 도중 실패해도 이미 실행한 기록을 보존합니다. 실제 Claude 인증, 도구 선택, 국가유산 10건 결과와 날씨·관광정보 실패 기록 표시를 검증했습니다.
-
-## 2026-11-02 확인 결과
-- npm ci: 149개 설치, audit 0 vulnerabilities
-- npm run build: 성공
-- npm run lint: 경고/오류 없이 성공
-- 로컬 브라우저: 홈 및 국가유산 화면 표시
-- 국가유산청: 실제 10건 응답, 제주 관덕정 표시
-- Supabase: 제주 관덕정 저장 후 브라우저 새로고침 조회 성공
-- Claude: 실제 인증 및 세 도구 호출 기록 검증 성공
-- TourAPI/기상청: 공공데이터 키 미설정으로 정상 응답 미검증
-- GitHub/Vercel/모바일: 최신 VERIFICATION_REPORT.md 참조
-
-의료적 진단과 치료를 제공하지 않습니다. 추천 중 영업시간·혼잡도·정확한 이동시간은 해당 도구로 확인되지 않습니다.
-
-## 배포 주소
-https://jeju-wellness-concierge.vercel.app
-
-실제 응답 재검증: node scripts/verify-live.mjs. 공공데이터 키 미설정인 경우 두 공공 API 정상 응답 검사는 실패합니다. 로컬에서 Claude까지 검사하려면 서버 키를 별도 설정해야 합니다. 자세한 성공·차단 근거는 VERIFICATION_REPORT.md와 verification-production.json에 기록했습니다.
-
-추가 회귀 검사: npm test (8개). 최신 결과와 제한은 VERIFICATION_REPORT.md를 확인하세요.
+## 사용자 안내
+게스트 저장함은 같은 브라우저 세션에서 유지되며, 브라우저 데이터를 삭제하거나 기기를 바꾸면 접근할 수 없습니다.
+의료적 진단·치료를 제공하지 않습니다. 영업시간, 실제 혼잡, 이동시간은 별도 확인이 필요합니다.
+GitHub push 자동 배포는 별도 Login Connection이 필요하며 현재는 직접 업로드 배포입니다.
