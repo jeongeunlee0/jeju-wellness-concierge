@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from 'react'
 import { Button, Card, Col, Row } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { ping } from '../api/client'
-import { isSupabaseReady, supabase } from '../lib/supabase'
+import { ensureUser, isSupabaseReady, supabase } from '../lib/supabase'
 import ConditionsBar from '../components/ConditionsBar'
 import { Loading } from '../components/Status'
 
@@ -30,8 +30,10 @@ export default function Home() {
   const [api, setApi] = useState({ state: 'wait', msg: '확인 중...' })
 
   useEffect(() => {
-    if (isSupabaseReady) supabase.from('courses').select('id').limit(1).then(({ error }) =>
-      setDb(error ? { state: 'fail', msg: error.message } : { state: 'ok', msg: '연결 OK' }))
+    if (isSupabaseReady) ensureUser()
+      .then(() => supabase.from('courses').select('id').limit(1))
+      .then(({ error }) => setDb(error ? { state: 'fail', msg: error.message } : { state: 'ok', msg: '연결 OK (익명 사용자 · RLS)' }))
+      .catch((e) => setDb({ state: 'fail', msg: e.message }))
 
     ping()
       .then((d) => setApi({

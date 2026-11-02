@@ -1,24 +1,22 @@
-import { useEffect, useState } from 'react'
-import { Accordion, Button, Form } from 'react-bootstrap'
+import { useEffect } from 'react'
+import { Accordion, Alert, Button } from 'react-bootstrap'
 import PageHeader from '../components/PageHeader'
 import CourseResult from '../components/CourseResult'
 import { Empty, Loading } from '../components/Status'
 import { useAppStore } from '../store/useAppStore'
 
-// 저장한 코스 — Supabase courses 테이블에서 닉네임별로 조회 (새로고침해도 유지)
+// 저장한 코스 — Supabase courses 테이블에서 "내 익명 사용자"의 행만 조회 (새로고침해도 유지)
 export default function My() {
-  const { nickname, setNickname, courses, coursesLoading, loadCourses, deleteCourse } = useAppStore()
-  const [draft, setDraft] = useState(nickname)
+  const { courses, coursesLoading, loadCourses, deleteCourse } = useAppStore()
 
-  useEffect(() => { loadCourses() }, [nickname, loadCourses])
+  useEffect(() => { loadCourses() }, [loadCourses])
 
   return (
     <>
-      <PageHeader icon="bookmark-heart" title="저장한 코스" subtitle="로그인 없이 닉네임으로 내 코스를 불러옵니다" />
-      <Form className="d-flex gap-2 mb-4" style={{ maxWidth: 380 }} onSubmit={(e) => { e.preventDefault(); setNickname(draft) }}>
-        <Form.Control placeholder="닉네임" value={draft} onChange={(e) => setDraft(e.target.value)} />
-        <Button type="submit" variant="outline-primary">불러오기</Button>
-      </Form>
+      <PageHeader icon="bookmark-heart" title="저장한 코스" subtitle="이 브라우저에서 저장한 코스만 보여요" />
+      <Alert variant="light" className="border small">
+        <i className="bi bi-shield-lock me-1" />로그인 없이 쓰는 익명 계정으로 저장됩니다. 브라우저 데이터를 지우거나 다른 기기에서 접속하면 이전 코스를 볼 수 없어요.
+      </Alert>
       {coursesLoading ? <Loading /> : courses.length === 0 ? <Empty text="저장한 코스가 없어요. AI 컨시어지에서 코스를 만들어 보세요." /> : (
         <Accordion>
           {courses.map((c) => (

@@ -24,7 +24,7 @@ function localApi(env) {
             status(code) { res.statusCode = code; return vres },
             json(data) { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(data)) },
           }
-          await mod.default({ method: req.method, query: Object.fromEntries(url.searchParams), body }, vres)
+          await mod.default({ method: req.method, query: Object.fromEntries(url.searchParams), body, headers: req.headers, socket: req.socket }, vres)
         } catch (e) {
           res.statusCode = e.code === 'ERR_LOAD_URL' ? 404 : 500
           res.setHeader('Content-Type', 'application/json')
