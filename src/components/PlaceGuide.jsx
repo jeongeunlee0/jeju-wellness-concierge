@@ -65,7 +65,7 @@ export default function PlaceGuide() {
     return () => { alive = false }
   }, [place])
 
-  const g = state.data
+  const g = place ? state.data : null
   const cartNames = new Set(cart.map((c) => c.name))
   const addNear = (it) => addToCart({ name: it.name, source: 'tour', addr: it.addr, lat: it.lat, lng: it.lng, minutes: it.type === 39 ? 60 : 70 })
 
