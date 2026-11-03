@@ -97,8 +97,8 @@ export async function buildGuide({ name, lat, lng, id, type }) {
 
   if (!id) { try { const r = await resolveContent(name, lat, lng); if (r) { id = r.id; type = r.type } } catch { /* 연결 실패 시 상세 정보 없이 진행 */ } }
   const [weather, air, intro, common, foodRaw, spotRaw] = await Promise.all([
-    safe('기상청 단기예보', () => getWeather({ place: region })),
-    safe('Open-Meteo 대기질', () => getAirQuality({ place: region })),
+    safe('기상청 단기예보', () => getWeather({ place: region, lat, lng })),
+    safe('Open-Meteo 대기질', () => getAirQuality({ place: region, lat, lng })),
     id && type ? safe('TourAPI 상세(이용 정보)', () => tourCall('detailIntro2', { contentId: id, contentTypeId: type })) : null,
     id ? safe('TourAPI 공통 정보', () => tourCall('detailCommon2', { contentId: id })) : null,
     safe('TourAPI 주변 음식점·카페', () => tourCall('locationBasedList2', { mapX: String(lng), mapY: String(lat), radius: '3000', arrange: 'E', numOfRows: '30', contentTypeId: '39' })),
@@ -109,7 +109,7 @@ export async function buildGuide({ name, lat, lng, id, type }) {
   const w = slots[0]
   const temps = slots.map((s) => s.temp).filter(Number.isFinite)
   const now = w ? {
-    time: w.time, temp: w.temp, sky: w.sky, rain: w.rain, pop: Math.max(...slots.map((s) => s.pop).filter(Number.isFinite), 0),
+    time: w.time, grid: w.grid, locationBasis: w.locationBasis, temp: w.temp, sky: w.sky, rain: w.rain, pop: Math.max(...slots.map((s) => s.pop).filter(Number.isFinite), 0),
     wind: Math.max(...slots.map((s) => s.wind).filter(Number.isFinite), 0), humidity: w.humidity,
     minTemp: temps.length ? Math.min(...temps) : w.temp, maxTemp: temps.length ? Math.max(...temps) : w.temp,
   } : null

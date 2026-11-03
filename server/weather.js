@@ -16,9 +16,25 @@ function baseDateTime() {
   };
 }
 
-export async function getWeather({ place = '제주시' } = {}) {
+
+export function toWeatherGrid(lat, lng) {
+  const rad = Math.PI / 180, re = 6371.00877 / 5;
+  const slat1 = 30 * rad, slat2 = 60 * rad, olat = 38 * rad;
+  const sn = Math.log(Math.cos(slat1) / Math.cos(slat2)) / Math.log(Math.tan(Math.PI / 4 + slat2 / 2) / Math.tan(Math.PI / 4 + slat1 / 2));
+  const sf = Math.pow(Math.tan(Math.PI / 4 + slat1 / 2), sn) * Math.cos(slat1) / sn;
+  const ro = re * sf / Math.pow(Math.tan(Math.PI / 4 + olat / 2), sn);
+  const ra = re * sf / Math.pow(Math.tan(Math.PI / 4 + lat * rad / 2), sn);
+  let theta = (lng - 126) * rad;
+  if (theta > Math.PI) theta -= 2 * Math.PI;
+  if (theta < -Math.PI) theta += 2 * Math.PI;
+  theta *= sn;
+  return [Math.floor(ra * Math.sin(theta) + 43.5), Math.floor(ro - ra * Math.cos(theta) + 136.5)];
+}
+
+export async function getWeather({ place = '제주시', lat, lng } = {}) {
   if (!process.env.DATA_GO_KR_KEY) throw new Error('DATA_GO_KR_KEY 가 설정되지 않았어요 (.env.local / Vercel 환경변수 확인)');
-  const [nx, ny] = GRID[place] ?? GRID['제주시'];
+  const located = Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) && lat != null && lng != null && Number(lat) >= 33 && Number(lat) <= 34.2 && Number(lng) >= 126 && Number(lng) <= 127.2;
+  const [nx, ny] = located ? toWeatherGrid(Number(lat), Number(lng)) : GRID[place] ?? GRID['제주시'];
   const params = new URLSearchParams({
     serviceKey: process.env.DATA_GO_KR_KEY,
     dataType: 'JSON', numOfRows: '1000', pageNo: '1',
@@ -43,7 +59,7 @@ export async function getWeather({ place = '제주시' } = {}) {
   const kstNow = new Date(Date.now() + 9 * 3600e3);
   const cutoff = kstNow.toISOString().slice(0, 10).replaceAll('-', '') + ' ' + String(kstNow.getUTCHours()).padStart(2, '0') + '00';
   return Object.entries(slots).sort(([a], [b]) => a.localeCompare(b)).filter(([time, v]) => time >= cutoff && v.TMP !== undefined && v.POP !== undefined && v.SKY !== undefined && v.PTY !== undefined).slice(0, 6).map(([time, v]) => ({
-    place, time, temp: Number(v.TMP), sky: SKY[v.SKY] ?? v.SKY,
+    place, time, grid: { nx, ny }, locationBasis: located ? '장소 좌표 기준 약 5km 격자 예보' : '도시 대표 격자 예보', temp: Number(v.TMP), sky: SKY[v.SKY] ?? v.SKY,
     wind: Number(v.WSD), humidity: Number(v.REH), // 풍속(m/s)·습도(%)
     rain: PTY[v.PTY] ?? v.PTY, pop: Number(v.POP), // pop = 강수확률(%)
   }));

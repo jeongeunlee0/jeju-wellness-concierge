@@ -89,9 +89,10 @@ export default function PlaceGuide() {
               <div className="guide-now glass">
                 <div className="guide-temp">{g.now.temp}<small>℃</small></div>
                 <div className="guide-now-rows">
+                  <span>기상청 {g.now.time?.slice(0, 8)} {g.now.time?.slice(-4, -2)}시 예보 · {g.now.locationBasis ?? '지역 예보'}</span>
                   <span><Icon name="thermo" size={15} />{g.now.sky} · 오늘 {g.now.minTemp}~{g.now.maxTemp}℃</span>
                   <span><Icon name="cloud" size={15} />강수확률 {g.now.pop}% · 바람 {g.now.wind}m/s</span>
-                  <span><Icon name="sun" size={15} />자외선 {g.uv}{g.air ? ` · 공기 ${g.air.grade}` : ''}</span>
+                  <span><Icon name="sun" size={15} />자외선 {g.uv}{g.air ? ` · 대기질(US AQI) ${g.air.grade}` : ''}</span>
                   <span><Icon name="sunset" size={15} />일출 {g.sun.sunrise} · 일몰 {g.sun.sunset}</span>
                 </div>
               </div>
