@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { Component, useMemo, useRef, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Html, Line } from '@react-three/drei'
 import * as THREE from 'three'
@@ -104,7 +104,7 @@ function Stop({ order, lat, lng, name, verified }) {
 }
 
 // stops: [{ name, lat, lng, verified }] — 추천 코스의 방문 순서대로. 비어 있으면 섬만 천천히 돌아갑니다.
-export default function Jeju3D({ stops = [], height = 480, focusX = 0 }) {
+function JejuScene({ stops = [], height = 480, focusX = 0 }) {
   const placed = stops.filter((s) => s.lat && s.lng)
   const pts = placed.map((s) => toXZ(s.lat, s.lng))
   const cx = pts.length ? pts.reduce((a, p) => a + p[0], 0) / pts.length : focusX
@@ -127,4 +127,40 @@ export default function Jeju3D({ stops = [], height = 480, focusX = 0 }) {
         autoRotate autoRotateSpeed={0.45} />
     </Canvas>
   )
+}
+
+function StaticJeju({ stops = [], height }) {
+  return (
+    <div style={{ minHeight: height, background: 'linear-gradient(135deg,#d2eeee,#f1f8ee)', display: 'grid', placeContent: 'center', padding: 24, overflow: 'hidden' }}>
+      <svg viewBox="0 0 400 180" width="100%" style={{ maxWidth: 420 }} role="img" aria-label="제주 섬 일러스트">
+        <path d="M35 112 Q55 55 155 38 Q269 12 365 65 Q397 97 332 129 Q192 181 67 144 Z" fill="#82bba0"/>
+        <path d="M150 112 L205 53 L252 109 Z" fill="#5d8b77"/><path d="M188 72 L205 53 L220 71 Z" fill="#eef5ed"/>
+      </svg>
+      {stops.length > 0 && <ol style={{ margin: '12px 0 0', paddingLeft: 24, overflowWrap: 'anywhere' }}>{stops.map((s, i) => <li key={i}>{s.name}</li>)}</ol>}
+    </div>
+  )
+}
+
+class SceneBoundary extends Component {
+  state = { failed: false }
+  static getDerivedStateFromError() { return { failed: true } }
+  render() { return this.state.failed ? this.props.fallback : this.props.children }
+}
+
+function supportsWebGL() {
+  if (typeof document === 'undefined') return false
+  try {
+    const canvas = document.createElement('canvas')
+    const gl = canvas.getContext('webgl2') || canvas.getContext('webgl')
+    if (!gl) return false
+    gl.getExtension('WEBGL_lose_context')?.loseContext()
+    return true
+  } catch { return false }
+}
+
+export default function Jeju3D(props) {
+  const [supported] = useState(supportsWebGL)
+  const fallback = <StaticJeju stops={props.stops} height={props.height ?? 480} />
+  if (!supported) return fallback
+  return <SceneBoundary fallback={fallback}><JejuScene {...props} /></SceneBoundary>
 }
