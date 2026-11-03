@@ -63,11 +63,11 @@ export async function buildFallbackCourse(p) {
     const seedType = p.purpose === '미식과 함께하는 휴식' ? '39' : indoor ? '14' : '12'
     const seedWords = p.purpose === '미식과 함께하는 휴식' ? plan.search : indoor ? ['미술관', '박물관'] : plan.search
     const seed = (await Promise.all(seedWords.map((keyword) => log('search_tour_places', { keyword, contentTypeId: seedType }, () => searchTour({ keyword, contentTypeId: seedType, rows: 20 }))))).flat().filter(Boolean).map(mapTour)
-    first = pick(seed, null, { regionOnly: true }) ?? pick(seed, null)
+    first = pick(seed, null, { regionOnly: true })
     if (!first) {
       const regional = (await log('search_tour_places', { keyword: '', contentTypeId: seedType }, () => searchTour({ contentTypeId: seedType, rows: 40 }))) ?? []
       const candidates = regional.map(mapTour)
-      first = pick(candidates, null, { regionOnly: true }) ?? pick(candidates, null)
+      first = pick(candidates, null, { regionOnly: true }) ?? pick(seed, null) ?? pick(candidates, null)
     }
     if (!first && !indoor) first = pick(heritage, null)
   }
@@ -103,7 +103,7 @@ export async function buildFallbackCourse(p) {
   const airPhrase = air ? `대기질은 '${air.grade}'(PM2.5 ${Math.round(air.pm25)}, 자외선 ${air.uv})예요.` : ''
   const reasonFor = (s, i) => {
     const label = s.source === 'heritage' ? `국가유산(${s.kind ?? '문화유산'})` : TYPE_LABEL[s.type] ?? '장소'
-    const role = i === 0 ? '코스의 시작으로 차분히 마음을 가라앉히기 좋아요' : i === stops.length - 1 && stops.length > 2 ? '마무리로 천천히 쉬어 가기 좋아요' : plan.role
+    const role = s.type === '14' ? '문화·전시를 둘러보는 휴식 후보예요. 실내 관람 범위는 방문 전에 확인하세요' : i === 0 ? '코스의 시작으로 차분히 마음을 가라앉히기 좋아요' : i === stops.length - 1 && stops.length > 2 ? '마무리로 천천히 쉬어 가기 좋아요' : plan.role
     return `${label}이에요. ${role}.`
   }
   const legs = stops.slice(1).map((s, i) => haversineKm(stops[i], s))
@@ -114,7 +114,7 @@ export async function buildFallbackCourse(p) {
     course: {
       summary: `${p.place}에서 방문시간 ${p.hours}시간 이내로 ${stops.length}곳을 ${indoor ? '문화시설 중심으로 둘러보는' : '가까운 곳끼리 연결한'} '${p.purpose}' 기본 추천 코스입니다.`,
       stops: stops.map((s, i) => ({ name: s.name, source: s.source, minutes: s.minutes, reason: reasonFor(s, i), verified: true, lat: s.lat, lng: s.lng, addr: s.addr, id: s.id || null, type: s.type || null })),
-      conditions: `${weatherPhrase} ${airPhrase} ${indoor ? '비·미세먼지 또는 선호에 따라 실내 중심으로 구성했어요.' : '조회된 날씨를 참고한 추천이며 현장 안전·운영 여부는 별도 확인이 필요해요.'}`.trim(),
+      conditions: `${weatherPhrase} ${airPhrase} ${indoor ? '비·미세먼지 또는 선호에 따라 문화시설을 우선 조회했어요. 야외 구간 유무는 방문 전 확인하세요.' : '조회된 날씨를 참고한 추천이며 현장 안전·운영 여부는 별도 확인이 필요해요.'}`.trim(),
       notes: `표시 시간은 장소 체류시간이며 실제 도로 이동·대기시간은 포함하지 않아요. 문화시설 분류가 실내 이용 가능 여부를 보장하지는 않아요. 장소는 공공데이터에 실제 있는 곳만 담았고, 운영시간은 장소별 방문 가이드에서 확인하세요.${outOfRegion ? ` 선택한 지역(${p.place})에서 찾은 장소가 부족해 일부는 다른 지역에 있어요.` : ''}${far ? ' 장소 사이가 멀어 차량 이동이 필요해요.' : ''}`,
     },
     steps,
