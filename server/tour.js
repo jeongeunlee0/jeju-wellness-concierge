@@ -1,7 +1,7 @@
 // 제주관광공사 비짓제주(VISIT JEJU) 관광정보 OPEN API
 // 공식 가이드: https://www.visitjeju.net/kr/visitjejuapi
 // 키는 서버 환경변수 VISITJEJU_API_KEY 에만 저장합니다.
-const BASE = 'https://api.visitjeju.net/vsjApi/contents/searchList';
+const BASE = 'https://api.visitjeju.net/vsjApi/contents/searchlist';
 
 export async function searchTour({ keyword = '', rows = 10 } = {}) {
   const key = process.env.VISITJEJU_API_KEY;
@@ -12,14 +12,14 @@ export async function searchTour({ keyword = '', rows = 10 } = {}) {
   // 공식 API는 keyword 검색 파라미터가 문서화되지 않아 서버에서 검색합니다.
   // 검색 범위는 최대 5페이지(페이지당 최대 100건)이며 전체 데이터 검색을 보장하지 않습니다.
   for (let page = 1; page <= 5 && found.length < limit; page++) {
-    const params = new URLSearchParams({ apiKey: key, locale: 'kr', category: 'c1', page: String(page) });
+    const params = new URLSearchParams({ apikey: key, locale: 'kr', page: String(page) });
     const response = await fetch(`${BASE}?${params}`, { signal: AbortSignal.timeout(8000) });
     if (!response.ok) throw new Error(`비짓제주 API HTTP ${response.status}`);
     const raw = await response.text();
     let data;
     try { data = JSON.parse(raw); }
     catch { throw new Error('비짓제주 API가 JSON이 아닌 응답을 반환했습니다'); }
-    if (!['200', '00', '0'].includes(String(data?.result))) {
+    if (!['00', '0'].includes(String(data?.result))) {
       throw new Error('비짓제주 API 오류: ' + (data?.resultMessage || data?.result || '응답 확인 필요'));
     }
     const items = Array.isArray(data.items) ? data.items : [];
