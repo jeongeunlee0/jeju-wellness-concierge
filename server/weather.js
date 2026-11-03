@@ -21,7 +21,7 @@ export async function getWeather({ place = '제주시' } = {}) {
   const [nx, ny] = GRID[place] ?? GRID['제주시'];
   const params = new URLSearchParams({
     serviceKey: process.env.DATA_GO_KR_KEY,
-    dataType: 'JSON', numOfRows: '300', pageNo: '1',
+    dataType: 'JSON', numOfRows: '1000', pageNo: '1',
     nx: String(nx), ny: String(ny), ...baseDateTime(),
   });
   const r = await fetch(`${BASE}?${params}`);
@@ -40,7 +40,9 @@ export async function getWeather({ place = '제주시' } = {}) {
     const key = `${it.fcstDate} ${it.fcstTime}`;
     (slots[key] ??= {})[it.category] = it.fcstValue;
   }
-  return Object.entries(slots).slice(0, 6).map(([time, v]) => ({
+  const kstNow = new Date(Date.now() + 9 * 3600e3);
+  const cutoff = kstNow.toISOString().slice(0, 10).replaceAll('-', '') + ' ' + String(kstNow.getUTCHours()).padStart(2, '0') + '00';
+  return Object.entries(slots).sort(([a], [b]) => a.localeCompare(b)).filter(([time, v]) => time >= cutoff && v.TMP !== undefined && v.POP !== undefined && v.SKY !== undefined && v.PTY !== undefined).slice(0, 6).map(([time, v]) => ({
     place, time, temp: Number(v.TMP), sky: SKY[v.SKY] ?? v.SKY,
     wind: Number(v.WSD), humidity: Number(v.REH), // 풍속(m/s)·습도(%)
     rain: PTY[v.PTY] ?? v.PTY, pop: Number(v.POP), // pop = 강수확률(%)

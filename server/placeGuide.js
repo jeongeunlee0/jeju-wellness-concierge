@@ -17,6 +17,9 @@ export async function tourCall(op, params) {
   try { data = JSON.parse(text) } catch { throw new Error(`TourAPI 응답이 JSON이 아님 (${op})`) }
   const err = data?.OpenAPI_ServiceResponse?.cmmMsgHeader
   if (err) throw new Error(`TourAPI 오류: ${err.returnAuthMsg ?? err.errMsg}`)
+  if (!r.ok) throw new Error(`TourAPI HTTP 오류 (${r.status})`)
+  const header = data?.response?.header
+  if (!header || !['0000', '00'].includes(String(header.resultCode))) throw new Error(`TourAPI 오류: ${header?.resultMsg ?? '응답 형식 확인 필요'}`)
   const item = data?.response?.body?.items?.item
   return !item ? [] : Array.isArray(item) ? item : [item]
 }

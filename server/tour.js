@@ -13,6 +13,7 @@ export async function searchTour({ keyword = '', contentTypeId = '12', rows = 10
     areaCode: '39', // 39 = 제주
   });
   if (contentTypeId) params.set('contentTypeId', contentTypeId);
+  if (contentTypeId) params.set('contentTypeId', String(contentTypeId));
   const op = keyword ? 'searchKeyword2' : 'areaBasedList2';
   if (keyword) params.set('keyword', keyword);
 
@@ -24,6 +25,9 @@ export async function searchTour({ keyword = '', contentTypeId = '12', rows = 10
 
   const err = data?.OpenAPI_ServiceResponse?.cmmMsgHeader;
   if (err) throw new Error('TourAPI 오류: ' + (err.returnAuthMsg ?? err.errMsg));
+  if (!r.ok) throw new Error(`TourAPI HTTP 오류 (${r.status})`);
+  const header = data?.response?.header;
+  if (!header || String(header.resultCode) !== '0000' && String(header.resultCode) !== '00') throw new Error('TourAPI 오류: ' + (header?.resultMsg ?? '응답 형식 확인 필요'));
   const item = data?.response?.body?.items?.item;
   const list = !item ? [] : Array.isArray(item) ? item : [item];
   return list.map((p) => ({
