@@ -6,6 +6,7 @@ import { Empty, ErrorAlert, Loading } from '../components/Status'
 import { fetchHeritage } from '../api/client'
 import { useAppStore } from '../store/useAppStore'
 import Icon from '../components/Icon'
+import HeritageArt from '../components/HeritageArt'
 
 export default function Heritage() {
   const addToCart = useAppStore((s) => s.addToCart)
@@ -38,7 +39,7 @@ export default function Heritage() {
       {loading ? <Loading /> : list.length === 0 ? <Empty /> : (
         <Row xs={1} sm={2} lg={3} className="g-3">
           {list.map((h, i) => (
-            <Col key={i}><ItemCard title={h.name} subtitle={h.city} badge={h.kind} art="landmark"
+            <Col key={i}><ItemCard title={h.name} subtitle={h.city} badge={h.kind} art="landmark" illustration={<HeritageArt kind={h.kind} />}
                 onGuide={h.lat && h.lng ? () => openGuide({ name: h.name, lat: Number(h.lat), lng: Number(h.lng) }) : undefined}
                 onAddCart={() => addToCart({ name: h.name, source: 'heritage', addr: h.city, lat: h.lat, lng: h.lng, minutes: 40 })}
                 inCart={cart.some((c) => c.source === 'heritage' && c.name === h.name)} /></Col>

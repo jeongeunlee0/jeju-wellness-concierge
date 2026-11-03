@@ -160,6 +160,7 @@ button.icon-btn { cursor: pointer; }
 /* ── 사진 대신 쓰는 디자인 면 ── */
 .placeholder-img.art-leaf { background: linear-gradient(135deg, #d7f0e3, #cfeaf0); color: #2e7d6b; }
 .placeholder-img.art-landmark { background: linear-gradient(135deg, #f6e6d8, #f3d9cf); color: #b5654a; }
+.heritage-art { width: 9rem; height: auto; max-width: 70%; max-height: 80%; }
 .placeholder-img.art-spark { background: linear-gradient(135deg, #efe3f7, #dde6fa); color: #6a55b8; }
 .placeholder-img.art-pin { background: linear-gradient(135deg, #fde9d3, #fbe0dc); color: #c0623a; }
 .mood-art { display: flex; align-items: center; gap: .8rem; padding: 1.1rem 1.3rem; color: var(--wc-ink); font-weight: 800; }
