@@ -63,7 +63,13 @@ export async function buildFallbackCourse(p) {
     const seedType = p.purpose === '미식과 함께하는 휴식' ? '39' : indoor ? '14' : '12'
     const seedWords = p.purpose === '미식과 함께하는 휴식' ? plan.search : indoor ? ['미술관', '박물관'] : plan.search
     const seed = (await Promise.all(seedWords.map((keyword) => log('search_tour_places', { keyword, contentTypeId: seedType }, () => searchTour({ keyword, contentTypeId: seedType, rows: 20 }))))).flat().filter(Boolean).map(mapTour)
-    first = pick(seed, null, { regionOnly: true }) ?? pick(seed, null) ?? pick(heritage, null)
+    first = pick(seed, null, { regionOnly: true }) ?? pick(seed, null)
+    if (!first) {
+      const regional = (await log('search_tour_places', { keyword: '', contentTypeId: seedType }, () => searchTour({ contentTypeId: seedType, rows: 40 }))) ?? []
+      const candidates = regional.map(mapTour)
+      first = pick(candidates, null, { regionOnly: true }) ?? pick(candidates, null)
+    }
+    if (!first && !indoor) first = pick(heritage, null)
   }
   if (!first) throw new Error('기본 추천을 만들 데이터가 없어요')
 
@@ -84,7 +90,7 @@ export async function buildFallbackCourse(p) {
   // 시간에 맞춰 장소 수를 조절 (이용 시간을 넘기지 않게)
   const want = p.hours <= 2 ? 2 : p.hours <= 4 ? 3 : 4
   if (stopsRaw.length < want) {
-    const more = pick(around, anchor2) ?? pick(heritage, anchor2, { regionOnly: true })
+    const more = pick(around, anchor2) ?? (!indoor ? pick(heritage, anchor2, { regionOnly: true }) : null)
     if (more) stopsRaw.splice(Math.max(1, stopsRaw.length - 1), 0, more)
   }
   const base = (s) => (s.source === 'heritage' ? 40 : s.type === '39' ? 60 : s.type === '14' ? 50 : 70)
